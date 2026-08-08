@@ -10,14 +10,20 @@ config_version=5
 
 [application]
 
-config/name="projeto"
+config/name="parque kikky"
+config/version="0.0.1"
+run/main_scene="uid://yr1ewngoew6k"
 config/features=PackedStringArray("4.7", "GL Compatibility")
 config/icon="res://icon.svg"
 
 [display]
 
+window/size/viewport_width=640
+window/size/viewport_height=360
+window/size/mode=4
+window/size/window_width_override=2000
+window/size/window_height_override=1200
 window/stretch/mode="canvas_items"
-window/stretch/aspect="expand"
 
 [physics]
 
