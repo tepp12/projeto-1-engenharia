@@ -175,6 +175,17 @@ mouse_filter = 2
 script = ExtResource("3_1kvvx")
 metadata/_edit_lock_ = true
 
+[node name="ColorRect2" type="ColorRect" parent="UI" unique_id=682718553]
+z_index = -1
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.3882353, 0.64705884, 0.47058824, 1)
+
 [node name="AspectRatioContainer" type="AspectRatioContainer" parent="UI" unique_id=1645263330]
 layout_mode = 1
 anchors_preset = 15

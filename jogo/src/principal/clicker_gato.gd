@@ -11,7 +11,7 @@ func _ready() -> void:
 
 
 func _process(_delta: float) -> void:
-	scale = lerp(scale, escala_desejada, 0.2)
+	scale = lerp(scale, escala_desejada, 0.15)
 
 func _mouse_entered() -> void:
 	escala_desejada = Vector2(2.5, 2.5)
