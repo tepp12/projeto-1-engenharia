@@ -15,7 +15,7 @@ enum Status {
 
 const NOME_MAX_CARACTERES := 20
 
-var _cat_id_definido: bool = false # gambiarra pra travar o id 
+var _cat_id_definido: bool = false 
 var cat_id: String:
 	set(value):
 		if _cat_id_definido:
@@ -34,7 +34,7 @@ var name: String:
 			return
 		name = value
 var appearance_id: String
-var status: Status #enum definido em Ativo ou Inativo (estado do gato)
+var status: Status # enum definido em Ativo ou Inativo (estado do gato)
 
 
 
@@ -54,7 +54,7 @@ func to_dict() -> Dictionary:
 		"type": cat_type,
 		"name": name,
 		"appearance_id": appearance_id,
-		"status": Status.keys()[status]  # converte enum -> string legível, ex: "ATIVO"
+		"status": Status.keys()[status]  
 	}
 	
 static func from_dict(data: Dictionary) -> Cat:
@@ -90,4 +90,4 @@ static func from_dict(data: Dictionary) -> Cat:
 
 func _to_string() -> String:
 	return "Cat: {id=%s, type=%s, name=%s, appearance=%s, status=%s}" % [cat_id, 
-	cat_type, name, appearance_id, status]
+	cat_type, name, appearance_id, Status.keys()[status]]
