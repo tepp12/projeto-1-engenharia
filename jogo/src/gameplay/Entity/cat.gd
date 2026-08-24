@@ -51,11 +51,30 @@ static func from_dict(data: Dictionary) -> Cat:
 	if not data.has("id") or not data.has("type") or not data.has("name") or not data.has("appearance_id") or not data.has("status"):
 		push_error("Dados de gato incompletos: " + str(data))
 		return null
-	var status_str: String = data["status"]
-	if not Status.keys().has(status_str):
-		push_error("Status desconhecido: " + status_str)
+
+	var id = data["id"]
+	var type = data["type"]
+	var cat_name = data["name"]
+	var appearance = data["appearance_id"]
+	var status_str = data["status"]
+
+	if typeof(id) != TYPE_STRING or id.strip_edges() == "":
+		push_error("cat_id inválido: " + str(id))
 		return null
-	var new_cat := Cat.new(data["id"], data["type"], data["name"], data["appearance_id"])
+	if typeof(type) != TYPE_STRING or type.strip_edges() == "":
+		push_error("cat_type inválido: " + str(type))
+		return null
+	if typeof(cat_name) != TYPE_STRING:
+		push_error("name inválido: " + str(cat_name))
+		return null
+	if typeof(appearance) != TYPE_STRING or appearance.strip_edges() == "":
+		push_error("appearance_id inválido: " + str(appearance))
+		return null
+	if typeof(status_str) != TYPE_STRING or not Status.keys().has(status_str):
+		push_error("Status desconhecido: " + str(status_str))
+		return null
+
+	var new_cat := Cat.new(id, type, cat_name, appearance)
 	new_cat.status = Status[status_str]
 	return new_cat
 
