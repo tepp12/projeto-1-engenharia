@@ -39,6 +39,9 @@ var status: Status #enum definido em Ativo ou Inativo (estado do gato)
 
 
 func _init(id: String, type: String, cat_name: String, appearance: String):
+	assert(id.strip_edges() != "", "cat_id não pode ser vazio")
+	assert(type.strip_edges() != "", "cat_type não pode ser vazio")
+	assert(appearance.strip_edges() != "", "appearance_id não pode ser vazio")
 	cat_id = id
 	cat_type = type
 	name = cat_name
