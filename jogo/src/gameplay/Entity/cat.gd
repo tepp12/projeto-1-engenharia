@@ -74,7 +74,7 @@ static func from_dict(data: Dictionary) -> Cat:
 	if typeof(type) != TYPE_STRING or type.strip_edges() == "":
 		push_error("cat_type inválido: " + str(type))
 		return null
-	if typeof(cat_name) != TYPE_STRING:
+	if typeof(cat_name) != TYPE_STRING or cat_name.strip_edges() == "" or cat_name.length() > NOME_MAX_CARACTERES:
 		push_error("name inválido: " + str(cat_name))
 		return null
 	if typeof(appearance) != TYPE_STRING or appearance.strip_edges() == "":
