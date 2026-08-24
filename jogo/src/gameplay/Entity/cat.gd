@@ -15,7 +15,14 @@ enum Status {
 
 const NOME_MAX_CARACTERES := 20
 
-var cat_id: String
+var _cat_id_definido: bool = false # gambiarra pra travar o id 
+var cat_id: String:
+	set(value):
+		if _cat_id_definido:
+			push_error("cat_id não pode ser alterado após a criação do gato")
+			return
+		cat_id = value
+		_cat_id_definido = true
 var cat_type: String # checar se deve ser String ou outro tipo
 var name: String:
 	set(value):
