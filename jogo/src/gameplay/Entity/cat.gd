@@ -50,20 +50,20 @@ func _init(id: String, type: String, cat_name: String, appearance: String):
 
 func to_dict() -> Dictionary:
 	return {
-		"id": cat_id,
-		"type": cat_type,
+		"cat_id": cat_id,
+		"cat_type": cat_type,
 		"name": name,
 		"appearance_id": appearance_id,
 		"status": Status.keys()[status]  
 	}
 	
 static func from_dict(data: Dictionary) -> Cat:
-	if not data.has("id") or not data.has("type") or not data.has("name") or not data.has("appearance_id") or not data.has("status"):
+	if not data.has("cat_id") or not data.has("cat_type") or not data.has("name") or not data.has("appearance_id") or not data.has("status"):
 		push_error("Dados de gato incompletos: " + str(data))
 		return null
 
-	var id = data["id"]
-	var type = data["type"]
+	var id = data["cat_id"]
+	var type = data["cat_type"]
 	var cat_name = data["name"]
 	var appearance = data["appearance_id"]
 	var status_str = data["status"]
