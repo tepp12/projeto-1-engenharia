@@ -4,6 +4,7 @@
 [ext_resource type="Script" uid="uid://swl4prm12mhx" path="res://src/principal/clicker_gato.gd" id="2_1kvvx"]
 [ext_resource type="Texture2D" uid="uid://dytpa6q554thb" path="res://recursos/spritesheet/ezgif-505fb42208e4cdff.png" id="2_6f21r"]
 [ext_resource type="Script" uid="uid://651mfl2m15rd" path="res://src/principal/ui.gd" id="3_1kvvx"]
+[ext_resource type="Texture2D" uid="uid://d0h082ghpxwpw" path="res://icon.svg" id="4_ndcgj"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_32f21"]
 atlas = ExtResource("2_6f21r")
@@ -175,6 +176,41 @@ mouse_filter = 2
 script = ExtResource("3_1kvvx")
 metadata/_edit_lock_ = true
 
+[node name="VBoxContainer" type="VBoxContainer" parent="UI" unique_id=2030126256]
+layout_mode = 1
+offset_left = 560.8
+offset_top = 88.0
+offset_right = 640.0
+offset_bottom = 360.0
+
+[node name="Panel" type="Panel" parent="UI/VBoxContainer" unique_id=560299885]
+layout_mode = 2
+metadata/_edit_group_ = true
+
+[node name="Label" type="Label" parent="UI/VBoxContainer/Panel" unique_id=1957594403]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Sprite2D" type="Sprite2D" parent="UI/VBoxContainer/Panel" unique_id=28063352]
+position = Vector2(16, 28)
+scale = Vector2(0.1875, 0.1875)
+texture = ExtResource("4_ndcgj")
+
+[node name="Panel2" type="Panel" parent="UI/VBoxContainer" unique_id=672986825]
+layout_mode = 2
+metadata/_edit_group_ = true
+
+[node name="Label" type="Label" parent="UI/VBoxContainer/Panel2" unique_id=1262999644]
+layout_mode = 0
+offset_right = 40.0
+offset_bottom = 23.0
+
+[node name="Sprite2D" type="Sprite2D" parent="UI/VBoxContainer/Panel2" unique_id=1934753245]
+position = Vector2(16, 28)
+scale = Vector2(0.1875, 0.1875)
+texture = ExtResource("4_ndcgj")
+
 [node name="ColorRect2" type="ColorRect" parent="UI" unique_id=682718553]
 z_index = -1
 layout_mode = 1
@@ -185,16 +221,6 @@ grow_horizontal = 2
 grow_vertical = 2
 mouse_filter = 2
 color = Color(0.3882353, 0.64705884, 0.47058824, 1)
-
-[node name="AspectRatioContainer" type="AspectRatioContainer" parent="UI" unique_id=1645263330]
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 2
-metadata/_edit_lock_ = true
 
 [node name="Panel" type="Panel" parent="UI" unique_id=2122826748]
 layout_mode = 0
@@ -243,6 +269,9 @@ horizontal_alignment = 1
 [node name="DebugTextOverlay" parent="." unique_id=961899459 instance=ExtResource("1_4ppj2")]
 mouse_filter = 2
 metadata/_edit_lock_ = true
+
+[node name="Timer" type="Timer" parent="." unique_id=1746558433]
+autostart = true
 
 [connection signal="input_event" from="Node2D/AnimatedSprite2D/ClickArea" to="Node2D/AnimatedSprite2D" method="_on_click_area_input_event"]
 [connection signal="mouse_entered" from="Node2D/AnimatedSprite2D/ClickArea" to="Node2D/AnimatedSprite2D" method="_mouse_entered"]

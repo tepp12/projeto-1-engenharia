@@ -4,23 +4,13 @@ extends Node
 
 var nome : String
 var custo_inicial : int
-var custo : int
+var custo : float
 var renda : int
-var quantidade : int
-
-
-# Called when the node enters the scene tree for the first time.
-func _ready() -> void:
-	pass # Replace with function body.
-
-
-# Called every frame. 'delta' is the elapsed time since the previous frame.
-func _process(delta: float) -> void:
-	pass
+var quantidade : float
 
 #Aumenta o custo quando o jogador compra uma estrutura
 func _atualizar_custo() -> void:
-	custo = custo*(1+ (quantidade/100))
+	custo = round(custo*(1+ (quantidade/100)))
 
 #Chamado quando o usuario compra estruturas
 func _comprar(buy_amount :int) -> void:

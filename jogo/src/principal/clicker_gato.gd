@@ -9,7 +9,6 @@ var escala_desejada : Vector2
 func _ready() -> void:
 	escala_desejada = escala_original
 
-
 func _process(_delta: float) -> void:
 	scale = lerp(scale, escala_desejada, 0.15)
 
