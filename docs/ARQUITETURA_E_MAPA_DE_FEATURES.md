@@ -58,14 +58,14 @@ Já existe:
 - modelo `Upgrade` com tipagem, validação, `to_dict()` e `from_dict()`;
 - contrato JSON de `Upgrade` padronizado com `upgrade_id`, `upgrade_type` e `upgrade_level`.
 
-Ainda faltam o modelo de `Automation`, o `GameState`, a serialização do estado agregado, a persistência local isolada, a separação da regra de clique, a preparação Web/HTTP e o restante do ciclo econômico.
+Ainda faltam o modelo de `CatUpgrade`, o `GameState`, a serialização do estado agregado, a persistência local isolada, a separação da regra de clique, a preparação Web/HTTP e o restante do ciclo econômico.
 
 ## Separação de responsabilidades
 
 ### Godot
 
 - executar as mecânicas do jogo;
-- representar ração, gatos, automações e upgrades;
+- representar ração, gatos, upgrades específicos de gato e upgrades gerais;
 - exibir a interface interna do jogo;
 - transformar o estado do jogo em dados serializáveis;
 - consumir a API do backend para carregar e atualizar o progresso.
@@ -108,11 +108,22 @@ Login, senha, perfil e ranking não pertencem ao Godot. O jogo deve receber apen
 
 A sequência abaixo deve ser seguida na ordem definida. O detalhamento operacional está em `docs/PLANO_DE_TASKS.md`.
 
-### 1. Criar os modelos mínimos de Automation e Upgrade
+### 1. Criar os modelos mínimos de CatUpgrade e Upgrade
 
 Criar classes `RefCounted`, tipadas e independentes da interface, com validação, `to_dict()` e `from_dict()`.
 
-`Automation` é uma classe própria para produção passiva vinculada obrigatoriamente a um `cat_id`. Ela não será representada como um upgrade genérico com associação opcional a gato.
+`CatUpgrade` é uma classe própria para melhorias vinculadas obrigatoriamente a um `cat_id`. `AUTOMATION` é seu primeiro tipo e representa a automatização da produção passiva de um gato específico. Outros tipos, como sorte ou velocidade, poderão ser adicionados futuramente sem misturar essas melhorias com os upgrades gerais.
+
+O contrato JSON inicial de `CatUpgrade` será:
+
+```json
+{
+  "cat_upgrade_id": "cat-upgrade-123",
+  "cat_id": "cat-123",
+  "cat_upgrade_type": "AUTOMATION",
+  "cat_upgrade_level": 1
+}
+```
 
 `Upgrade` representa melhorias gerais do jogador, como aumento de `click_power` ou de produção global, e não possui `cat_id`.
 
@@ -128,13 +139,13 @@ O contrato JSON atual de `Upgrade` é:
 
 O `upgrade_id` e o `upgrade_level` oficiais são controlados pelo backend Java. Para melhorar um upgrade, o Godot deverá enviar apenas a intenção da ação. O backend validará custo e saldo, atualizará o nível e devolverá o objeto atualizado para reconstrução por `from_dict()`.
 
-Essa separação é intencional. Caso surjam futuramente outras melhorias específicas de gato, uma possível generalização será avaliada naquele momento, sem antecipá-la no modelo atual.
+Essa separação é intencional: `Upgrade` não possui `cat_id`, enquanto todo `CatUpgrade` pertence a um gato específico. A automação deixa de ser uma classe e passa a ser o tipo inicial de `CatUpgrade`.
 
 O contrato JSON de `Cat` usa `cat_id`, `cat_type`, `name`, `appearance_id` e `status`, sempre em `snake_case`. As formas genéricas `id` e `type` não fazem parte desse contrato. O `cat_id` é gerado e controlado exclusivamente pelo backend Java.
 
 ### 2. Criar GameState
 
-Substituir o estado global mínimo por um modelo tipado que concentre `save_version`, `park_name`, `food`, `total_food_earned`, `click_power`, `cats`, `automations` e `upgrades`. O estado não deve conter senha, e-mail ou permissões do usuário.
+Substituir o estado global mínimo por um modelo tipado que concentre `save_version`, `park_name`, `food`, `total_food_earned`, `click_power`, `cats`, `cat_upgrades` e `upgrades`. O estado não deve conter senha, e-mail ou permissões do usuário.
 
 ### 3. Implementar a serialização completa de GameState
 
@@ -200,7 +211,7 @@ Não é necessário terminar o núcleo inteiro do jogo para começar o Java. O b
 - [ ] a exportação Web abrir corretamente;
 - [ ] houver um rascunho dos dados que a API receberá e devolverá.
 
-Compra de gato, compra e aplicação funcional de upgrades, ganho passivo funcional e fórmula de progressão podem evoluir depois, desde que qualquer mudança no contrato seja controlada por versão. Ranking, minigames, batalhas, customização, arte final e música também não bloqueiam o início do Java. Os modelos mínimos de `Automation` e `Upgrade` pertencem à preparação porque fazem parte do estado persistente, mesmo que suas regras funcionais ainda não existam.
+Compra de gato, compra e aplicação funcional de upgrades, ganho passivo funcional e fórmula de progressão podem evoluir depois, desde que qualquer mudança no contrato seja controlada por versão. Ranking, minigames, batalhas, customização, arte final e música também não bloqueiam o início do Java. Os modelos mínimos de `CatUpgrade` e `Upgrade` pertencem à preparação porque fazem parte do estado persistente, mesmo que suas regras funcionais ainda não existam.
 
 ## Primeira integração com Java
 
@@ -215,7 +226,7 @@ Login no site
   → recarregar e confirmar a persistência
 ```
 
-Depois dessa prova, a API pode evoluir para receber ações como compra de gato, automação e upgrade. O backend deve identificar o jogador pela sessão e nunca confiar em uma pontuação pronta enviada pelo cliente.
+Depois dessa prova, a API pode evoluir para receber ações como compra de gato, aquisição de `CatUpgrade` do tipo `AUTOMATION` e upgrade geral. O backend deve identificar o jogador pela sessão e nunca confiar em uma pontuação pronta enviada pelo cliente.
 
 ## Mapa de features
 
@@ -226,7 +237,7 @@ Depois dessa prova, a API pode evoluir para receber ações como compra de gato,
 | 3 | Backend, banco e autenticação | Pendente | Identidade e persistência oficial |
 | 4 | Save remoto por jogador | Pendente | Primeiro corte completo |
 | 5 | Clique e ganho de ração | Implementação básica | Ação a ser sincronizada e validada |
-| 6 | Modelo de Automation | Pendente | Necessário para estabilizar o contrato |
+| 6 | Modelo de CatUpgrade | Pendente | Inclui `AUTOMATION` e exige `cat_id` |
 | 7 | Modelo de Upgrade | Implementado | Contrato inicial estabilizado |
 | 8 | Compra de gatos, upgrades e ganho passivo | Pendente, posterior | Não bloqueia o início do Java |
 | 9 | Progressão e ranking | Pendente | Calculados oficialmente no backend |
@@ -260,4 +271,4 @@ Estado mínimo em JSON
   → salvar e recuperar o mesmo dado
 ```
 
-Depois dessa prova, compra de gatos, automação, upgrades e ranking devem ser incorporados ao mesmo fluxo. Assim, cada nova mecânica já nasce integrada ao modelo persistente, em vez de exigir uma adaptação online tardia.
+Depois dessa prova, compra de gatos, `CatUpgrade` do tipo `AUTOMATION`, upgrades gerais e ranking devem ser incorporados ao mesmo fluxo. Assim, cada nova mecânica já nasce integrada ao modelo persistente, em vez de exigir uma adaptação online tardia.

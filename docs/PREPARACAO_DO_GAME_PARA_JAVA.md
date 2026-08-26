@@ -20,7 +20,18 @@ O contrato JSON usa chaves em `snake_case`. O modelo `Cat` usa `cat_id`, `cat_ty
 }
 ```
 
-`Automation` e `Upgrade` permanecem classes distintas. `Automation` representa produção passiva associada obrigatoriamente a um `cat_id`. `Upgrade` representa melhorias gerais do jogador, como `click_power`, e não possui `cat_id`.
+`CatUpgrade` e `Upgrade` são classes distintas. `CatUpgrade` representa melhorias vinculadas obrigatoriamente a um `cat_id`; seu primeiro tipo é `AUTOMATION`, que automatiza a produção passiva do gato associado. `Upgrade` representa melhorias gerais do jogador, como `click_power`, e não possui `cat_id`.
+
+O contrato JSON inicial de `CatUpgrade` será:
+
+```json
+{
+  "cat_upgrade_id": "cat-upgrade-123",
+  "cat_id": "cat-123",
+  "cat_upgrade_type": "AUTOMATION",
+  "cat_upgrade_level": 1
+}
+```
 
 O contrato JSON atual de `Upgrade` é:
 
@@ -34,15 +45,15 @@ O contrato JSON atual de `Upgrade` é:
 
 O `upgrade_id` e o `upgrade_level` oficiais são controlados pelo backend Java. O Godot não incrementa o nível diretamente: ele envia a intenção de melhorar, e o backend valida custo e saldo antes de devolver o `Upgrade` atualizado.
 
-Não será criado, neste momento, um modelo genérico de upgrade com `cat_id` opcional. Um campo que só se aplica a parte dos objetos indica responsabilidades diferentes. Caso surjam futuramente outras melhorias específicas de gato, como bônus de sorte ou velocidade, a necessidade de generalização será avaliada naquele momento.
+Não será criado um `Upgrade` geral com `cat_id` opcional. Melhorias específicas, incluindo futuras opções como bônus de sorte ou velocidade, pertencem a `CatUpgrade`. A automação não é mais uma classe independente: ela é o tipo inicial `AUTOMATION`.
 
 O `cat_id` é gerado e controlado exclusivamente pelo backend Java. O cliente Godot não cria identificadores de gatos; um `Cat` oficial é reconstruído a partir dos dados validados recebidos do servidor.
 
 ## O mínimo necessário no Godot
 
-### 1. Criar os modelos mínimos de Automation e Upgrade
+### 1. Criar os modelos mínimos de CatUpgrade e Upgrade
 
-Criar classes `RefCounted`, tipadas e independentes da interface, seguindo o padrão de `Cat`: validação, `to_dict()` e `from_dict()`. `Automation` deve exigir `cat_id`; `Upgrade` não deve possuir esse campo.
+Criar classes `RefCounted`, tipadas e independentes da interface, seguindo o padrão de `Cat`: validação, `to_dict()` e `from_dict()`. `CatUpgrade` deve exigir `cat_id` e começar com o tipo `AUTOMATION`; `Upgrade` não deve possuir `cat_id`.
 
 ### 2. Criar GameState
 
@@ -54,7 +65,7 @@ Criar um estado agregado e independente da interface contendo:
 - `total_food_earned`;
 - `click_power`;
 - `cats`;
-- `automations`;
+- `cat_upgrades`;
 - `upgrades`.
 
 Somente dados do jogo pertencem a esse estado. Login, senha, e-mail, perfil e posição no ranking ficam fora do Godot.
@@ -104,7 +115,7 @@ Gerar uma exportação de teste e confirmar:
   "total_food_earned": 0,
   "click_power": 1,
   "cats": [],
-  "automations": [],
+  "cat_upgrades": [],
   "upgrades": []
 }
 ```
@@ -115,7 +126,7 @@ O backend Java deve respeitar as chaves `snake_case` ao receber ou devolver os d
 
 O desenvolvimento do backend pode começar quando:
 
-- [ ] `Automation` e `Upgrade` possuírem modelos mínimos, tipados e validáveis;
+- [ ] `CatUpgrade` e `Upgrade` possuírem modelos mínimos, tipados e validáveis;
 - [ ] `GameState` agregar todo o estado persistente;
 - [ ] `GameState` puder ser convertido para JSON e reconstruído;
 - [ ] tipos, campos obrigatórios e `save_version` forem validados;
@@ -138,7 +149,7 @@ Não é necessário concluir antes do backend:
 - ganho offline;
 - arte, música e interface finais.
 
-Os modelos mínimos de `Automation` e `Upgrade` fazem parte da preparação porque pertencem ao contrato persistente. Suas regras funcionais serão implementadas posteriormente.
+Os modelos mínimos de `CatUpgrade` e `Upgrade` fazem parte da preparação porque pertencem ao contrato persistente. A produção passiva funcional do tipo `AUTOMATION` será implementada posteriormente.
 
 ## Próximo passo após esta etapa
 
