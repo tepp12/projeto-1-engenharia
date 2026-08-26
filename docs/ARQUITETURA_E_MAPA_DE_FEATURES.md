@@ -42,7 +42,7 @@ Login no site
 
 Essa integração é uma feature transversal: ela afeta o modelo de dados, as regras econômicas, a persistência, a segurança, a exportação Web e a forma de calcular a progressão.
 
-## Estado atual na branch `dev`
+## Estado atual na branch `main`
 
 O projeto Godot válido está em `jogo/`, com configuração em `jogo/project.godot`.
 
@@ -53,10 +53,12 @@ Já existe:
 - poder de clique no estado global;
 - resposta visual do gato ao mouse e ao clique;
 - overlay básico de FPS e versão.
-- modelo inicial de `Cat` com validação, `to_dict()` e `from_dict()` na `dev`;
+- modelo `Cat` com validação, `to_dict()` e `from_dict()`;
 - contrato JSON de `Cat` padronizado com `cat_id` e `cat_type`.
+- modelo `Upgrade` com tipagem, validação, `to_dict()` e `from_dict()`;
+- contrato JSON de `Upgrade` padronizado com `upgrade_id`, `upgrade_type` e `upgrade_level`.
 
-Ainda faltam os modelos de `Automation` e `Upgrade`, o `GameState`, a serialização do estado agregado, a persistência local isolada, a preparação Web/HTTP e o restante do ciclo econômico.
+Ainda faltam o modelo de `Automation`, o `GameState`, a serialização do estado agregado, a persistência local isolada, a separação da regra de clique, a preparação Web/HTTP e o restante do ciclo econômico.
 
 ## Separação de responsabilidades
 
@@ -113,6 +115,18 @@ Criar classes `RefCounted`, tipadas e independentes da interface, com validaçã
 `Automation` é uma classe própria para produção passiva vinculada obrigatoriamente a um `cat_id`. Ela não será representada como um upgrade genérico com associação opcional a gato.
 
 `Upgrade` representa melhorias gerais do jogador, como aumento de `click_power` ou de produção global, e não possui `cat_id`.
+
+O contrato JSON atual de `Upgrade` é:
+
+```json
+{
+  "upgrade_id": "click-power-basic",
+  "upgrade_type": "CLICK_POWER",
+  "upgrade_level": 1
+}
+```
+
+O `upgrade_id` e o `upgrade_level` oficiais são controlados pelo backend Java. Para melhorar um upgrade, o Godot deverá enviar apenas a intenção da ação. O backend validará custo e saldo, atualizará o nível e devolverá o objeto atualizado para reconstrução por `from_dict()`.
 
 Essa separação é intencional. Caso surjam futuramente outras melhorias específicas de gato, uma possível generalização será avaliada naquele momento, sem antecipá-la no modelo atual.
 
@@ -213,7 +227,7 @@ Depois dessa prova, a API pode evoluir para receber ações como compra de gato,
 | 4 | Save remoto por jogador | Pendente | Primeiro corte completo |
 | 5 | Clique e ganho de ração | Implementação básica | Ação a ser sincronizada e validada |
 | 6 | Modelo de Automation | Pendente | Necessário para estabilizar o contrato |
-| 7 | Modelo de Upgrade | Pendente | Necessário para estabilizar o contrato |
+| 7 | Modelo de Upgrade | Implementado | Contrato inicial estabilizado |
 | 8 | Compra de gatos, upgrades e ganho passivo | Pendente, posterior | Não bloqueia o início do Java |
 | 9 | Progressão e ranking | Pendente | Calculados oficialmente no backend |
 | 10 | Nomear parque | Apenas representação visual | Bom dado simples para testar sincronização |
