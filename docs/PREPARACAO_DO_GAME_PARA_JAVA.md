@@ -6,7 +6,7 @@ Preparar o Godot para integração com o backend sem exigir que todas as feature
 
 O resultado desta etapa deve ser um jogo Web capaz de representar e reconstruir um estado mínimo, carregar o progresso oficial e enviar ações ao backend Java.
 
-O backend Java é autoritativo: autentica o jogador, valida ações, calcula seus efeitos e persiste o estado oficial. O Godot mantém uma cópia para apresentação e não pode sobrescrever a economia enviando um `GameState` completo. O save local serve somente para teste de serialização e desenvolvimento sem API.
+O backend Java é autoritativo: autentica o jogador, valida ações, calcula seus efeitos e persiste o estado oficial. O Godot mantém uma cópia para apresentação e não pode sobrescrever a economia enviando um `GameState` completo. Como não existe requisito de modo offline ou cache, o save local não faz parte da arquitetura planejada.
 
 ## Decisões de modelagem
 
@@ -76,21 +76,17 @@ Somente dados do jogo pertencem a esse estado. Login, senha, e-mail, perfil e po
 
 O estado implementa `to_dict()` e `from_dict()`, serializa e reconstrói seus modelos aninhados e valida campos obrigatórios, tipos, `save_version`, IDs duplicados e relacionamentos. Existe um teste de round-trip por JSON, ainda não executado neste ambiente por indisponibilidade do CLI do Godot.
 
-### 4. Implementar save local de teste (em andamento)
+### 4. Validar o contrato JSON (execução pendente)
 
-O estado deve ser convertido para JSON, salvo localmente, recarregado, reconstruído e validado. `SaveRepository` e a implementação inicial de `LocalSaveRepository` já existem, mas o fluxo completo e os casos de erro ainda precisam de testes no Godot.
+O teste existente converte o estado para JSON, interpreta o conteúdo, reconstrói o `GameState` e compara o resultado com o original. Ele precisa ser executado em ambiente com o CLI do Godot.
 
-O arquivo local não é progresso oficial e não deve ser sincronizado automaticamente com o Java. Um jogador pode alterá-lo, assim como pode adulterar a memória ou requisições do cliente.
+Os scripts experimentais `SaveRepository` e `LocalSaveRepository` foram removidos. Eles modelavam escrita de estado completo pelo cliente, responsabilidade incompatível com a API autoritativa.
 
-### 5. Isolar arquivo local e comunicação remota
+### 5. Isolar comunicação remota
 
-O gameplay não deve acessar arquivos ou `HTTPRequest` diretamente. O contrato atual `SaveRepository` pertence ao teste de arquivo local. A API terá responsabilidades diferentes: consultar o estado oficial e enviar ações assíncronas.
+O gameplay não deve acessar `HTTPRequest` diretamente. A camada de rede deve consultar o estado oficial e enviar ações assíncronas por contratos separados.
 
 ```text
-Teste/desenvolvimento local
-   └── SaveRepository
-       └── LocalSaveRepository
-
 Modo online
    ├── GameStateQuery
    └── GameActionClient
@@ -98,9 +94,15 @@ Modo online
 
 Não deve ser criado um `ApiSaveRepository.save_game(game_state)` que aceite o estado completo como origem do progresso. A API deverá receber comandos como `rename_park`, `click`, `buy_cat` e `buy_upgrade`; o Java calcula e devolve o resultado confirmado.
 
-### 6. Separar a regra de clique da interface e da cena (concluído no fluxo local)
+### 6. Separar a regra de clique da interface e da cena (fluxo local concluído; fluxo online pendente)
 
-O `clicker_gato.gd` chama `game_state.earn_food(click_power)`, e a UI lê `game_state.food`. Isso separa a interface do estado. Na integração online, o clique passará a enviar uma ação ao Java, e o estado exibido será atualizado a partir da resposta oficial.
+O `clicker_gato.gd` chama `game_state.earn_food(click_power)`, e a UI lê `game_state.food`. Isso separa a interface do estado no protótipo atual.
+
+Na integração online, não será feita uma requisição por clique. O Godot manterá cliques pendentes, mostrará uma previsão visual e enviará lotes periódicos contendo `command_id`, `click_count` e `base_revision`. O Java validará limites, usará o `click_power` oficial, persistirá uma única atualização e devolverá o estado confirmado. `command_id` impedirá recompensa duplicada em repetições, enquanto `revision` tratará concorrência e permanecerá distinta de `save_version`.
+
+Cliques realizados durante uma requisição permanecerão pendentes para o lote seguinte. A previsão visual nunca será considerada saldo oficial.
+
+Produção passiva será calculada no Java pela taxa oficial e pelo tempo desde a última atualização, ao carregar o estado ou processar uma ação, evitando requisições e gravações contínuas.
 
 ### 7. Testar a exportação Web e HTTP
 
@@ -139,10 +141,11 @@ O desenvolvimento do backend pode começar quando:
 - [x] `GameState` agregar todo o estado persistente;
 - [x] `GameState` puder ser convertido para JSON e reconstruído;
 - [x] tipos, campos obrigatórios e `save_version` forem validados;
-- [ ] salvar e carregar localmente funcionar;
-- [x] o acesso inicial a arquivo estiver isolado por `SaveRepository` e `LocalSaveRepository`;
+- [ ] o teste de round-trip for executado no Godot;
+- [x] os scripts experimentais de save local forem removidos;
 - [x] o clique alterar o estado por uma regra de gameplay, sem modificar o saldo diretamente na UI ou na cena;
 - [ ] o contrato HTTP separar consulta de estado e envio de ações;
+- [ ] o contrato de lote de cliques definir idempotência e revisão;
 - [ ] a exportação Web abrir corretamente;
 - [ ] uma requisição HTTP de teste funcionar no navegador.
 
@@ -173,4 +176,4 @@ Godot Web
 → recarregar e confirmar o nome
 ```
 
-Cadastro, login, sessão, banco e validação oficial serão implementados no site e no backend Java. Ações econômicas posteriores seguirão o mesmo princípio: o cliente envia intenção, e o servidor calcula e confirma o resultado.
+Cadastro, login, sessão, banco e validação oficial serão implementados no site e no backend Java. Ações econômicas posteriores seguirão o mesmo princípio: o cliente envia intenção, e o servidor calcula e confirma o resultado. Para cliques, as intenções serão agrupadas; para produção passiva, o servidor calculará o acumulado pelo tempo.
