@@ -23,7 +23,7 @@ func _on_click_area_input_event(_viewport: Node, event: InputEvent, _shape_idx: 
 	if event is InputEventMouseButton and event.pressed:
 		if event.button_index == MOUSE_BUTTON_LEFT:
 			escala_desejada = Vector2(3, 3)
-			GlobalValues.dinheiro = GlobalValues.dinheiro + 1 * GlobalValues.poder_click
+			GlobalValues.game_state.earn_food(GlobalValues.game_state.click_power)
 			
 	if event is InputEventMouseButton and event.is_released():
 		if event.button_index == MOUSE_BUTTON_LEFT:
