@@ -44,7 +44,14 @@ func _init(id: String, type: UpgradeType, level: int):
 	upgrade_id = id
 	upgrade_type = type
 	upgrade_level = level
-	
+
+func to_dict() -> Dictionary:
+	return {
+		"upgrade_id": upgrade_id,
+		"upgrade_type": UpgradeType.keys()[upgrade_type],
+		"upgrade_level": upgrade_level
+	}
+
 static func from_dict(data: Dictionary) -> Upgrade:
 	if not data.has("upgrade_id") or not data.has("upgrade_type") or not data.has("upgrade_level"):
 		push_error("Dados de upgrade incompletos: " + str(data))
