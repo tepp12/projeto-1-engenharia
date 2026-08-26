@@ -5,9 +5,9 @@ func _init() -> void:
 	var source_data: Dictionary = {
 		"save_version": GameState.CURRENT_SAVE_VERSION,
 		"park_name": "Parque de Teste",
-		"food": 25.5,
-		"total_food_earned": 40.0,
-		"click_power": 2.5,
+		"food": 25,
+		"total_food_earned": 40,
+		"click_power": 2,
 		"cats": [
 			{
 				"cat_id": "cat-1",

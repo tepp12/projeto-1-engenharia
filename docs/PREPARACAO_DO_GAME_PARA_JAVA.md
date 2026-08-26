@@ -12,6 +12,8 @@ O backend Java é autoritativo: autentica o jogador, valida ações, calcula seu
 
 O contrato JSON usa chaves em `snake_case`. O modelo `Cat` usa `cat_id`, `cat_type`, `name`, `appearance_id` e `status`; as chaves genéricas `id` e `type` não fazem parte desse contrato.
 
+`food`, `total_food_earned` e `click_power` são quantidades inteiras. No Godot usam `int` de 64 bits e nos DTOs Java deverão usar `long`. O contrato rejeita valores fracionários.
+
 ```json
 {
   "cat_id": "cat-123",

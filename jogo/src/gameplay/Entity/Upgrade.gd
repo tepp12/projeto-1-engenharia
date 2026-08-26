@@ -77,7 +77,7 @@ static func from_dict(data: Dictionary) -> Upgrade:
 		push_error("upgrade_type desconhecido: " + type_name)
 		return null
 
-	if typeof(raw_level) != TYPE_INT or int(raw_level) < 1:
+	if not _is_integer_number(raw_level) or int(raw_level) < 1:
 		push_error("upgrade_level inválido: " + str(raw_level))
 		return null
 	
@@ -86,6 +86,14 @@ static func from_dict(data: Dictionary) -> Upgrade:
 	var level: int = int(raw_level)
 	
 	return Upgrade.new(id, type, level)
+
+
+static func _is_integer_number(value: Variant) -> bool:
+	if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
+		return false
+
+	var numeric_value: float = float(value)
+	return is_finite(numeric_value) and numeric_value == floor(numeric_value)
 
 
 

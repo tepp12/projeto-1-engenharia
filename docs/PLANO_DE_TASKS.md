@@ -12,6 +12,8 @@ No modo online, o backend Java será autoritativo. O Godot manterá uma cópia d
 
 O contrato JSON usa chaves em `snake_case`.
 
+`food`, `total_food_earned` e `click_power` são inteiros de 64 bits no Godot e devem ser mapeados para `long` no Java. Valores fracionários não fazem parte do contrato.
+
 O modelo `Cat` usa:
 
 - `cat_id`;

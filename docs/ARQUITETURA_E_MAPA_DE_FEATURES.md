@@ -59,6 +59,8 @@ Godot envia uma ação
 
 O backend não deve aceitar um `GameState` completo enviado pelo cliente como fonte confiável. Mesmo sem arquivo local, o cliente e as requisições HTTP podem ser adulterados. Validação de formato no Godot melhora a robustez, mas não constitui proteção contra trapaça.
 
+`food`, `total_food_earned` e `click_power` são quantidades inteiras. No GDScript usam `int` de 64 bits e no Java deverão usar `long`. O contrato não admite frações de ração ou de poder de clique. Na entrada JSON, uma representação equivalente como `1.0` pode ser normalizada para `1`, mas valores fracionários devem ser rejeitados.
+
 ### Cliques em lote e atualização otimista
 
 Uma requisição por clique prejudicaria latência e escalabilidade. O Godot deve acumular cliques ainda não confirmados e enviá-los periodicamente em lotes, sem informar a quantidade de ração resultante.
