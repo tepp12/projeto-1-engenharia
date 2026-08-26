@@ -26,7 +26,7 @@ Os três casos de uso centrais são:
 
 O projeto atual não termina no cliente Godot. Login, persistência remota e ranking fazem parte do sistema pretendido. O backend Java é a fonte da verdade do progresso oficial. O estado local no Godot representa uma cópia usada pela interface e pelas mecânicas, mas não tem autoridade para conceder recursos, níveis, gatos ou pontuação.
 
-O save local existe somente para provar serialização, apoiar testes e permitir desenvolvimento sem a API. Ele não deve ser enviado posteriormente ao servidor como progresso confiável nem disputar autoridade com o banco.
+Não haverá save local como feature do produto nem como alternativa ao backend. A serialização será provada pelo teste de round-trip em memória. Um cache local só deverá ser criado futuramente se surgir um requisito explícito, sempre como cópia descartável e não autoritativa.
 
 ## Objetivo arquitetural principal
 
@@ -59,6 +59,24 @@ Godot envia uma ação
 
 O backend não deve aceitar um `GameState` completo enviado pelo cliente como fonte confiável. Mesmo sem arquivo local, o cliente e as requisições HTTP podem ser adulterados. Validação de formato no Godot melhora a robustez, mas não constitui proteção contra trapaça.
 
+### Cliques em lote e atualização otimista
+
+Uma requisição por clique prejudicaria latência e escalabilidade. O Godot deve acumular cliques ainda não confirmados e enviá-los periodicamente em lotes, sem informar a quantidade de ração resultante.
+
+```json
+{
+  "command_id": "550e8400-e29b-41d4-a716-446655440000",
+  "click_count": 7,
+  "base_revision": 31
+}
+```
+
+`command_id` torna a operação idempotente: repetir o mesmo lote após perda da resposta não pode conceder recompensa novamente. `base_revision` identifica em qual revisão oficial o comando se baseou e ajuda a tratar concorrência entre requisições, abas ou dispositivos. `revision` é metadado de concorrência da API e não substitui `save_version`, que representa a versão do formato do estado.
+
+O Java limita e valida `click_count`, usa o `click_power` oficial, aplica a recompensa em uma transação e devolve o estado confirmado. O Godot pode mostrar imediatamente uma previsão baseada nos cliques pendentes para manter a interface responsiva, mas deve reconciliá-la com a resposta do servidor. Cliques feitos enquanto um lote está em trânsito permanecem pendentes para o lote seguinte.
+
+Produção passiva não deve gerar gravações frequentes. O backend calcula o valor acumulado pela taxa oficial e pelo tempo desde a última atualização quando o estado é carregado ou uma ação é processada.
+
 ## Estado atual do código
 
 O projeto Godot válido está em `jogo/`, com configuração em `jogo/project.godot`.
@@ -81,9 +99,9 @@ Já existe:
 - modelo `CatUpgrade` com tipagem, validação, `to_dict()` e `from_dict()`;
 - contrato JSON de `CatUpgrade` padronizado com `cat_upgrade_id`, `cat_id`, `cat_upgrade_type` e `cat_upgrade_level`, começando pelo tipo `AUTOMATION`;
 - clique integrado a `GameState.earn_food()` e UI lendo `GameState.food`;
-- contrato `SaveRepository` e implementação inicial de `LocalSaveRepository` em desenvolvimento.
+- teste de round-trip suficiente para validar o formato sem criar persistência local.
 
-Ainda faltam validar o save local de ponta a ponta, definir resultados explícitos para erros de persistência, preparar Web/HTTP, implementar o backend autoritativo e desenvolver o restante do ciclo econômico. O teste do `GameState` e a verificação headless também dependem de execução em ambiente com o CLI do Godot disponível.
+Ainda faltam validar o teste do contrato no Godot, preparar Web/HTTP, implementar o backend autoritativo e desenvolver o restante do ciclo econômico. O teste do `GameState` e a verificação headless dependem de execução em ambiente com o CLI do Godot disponível.
 
 ## Separação de responsabilidades
 
@@ -94,7 +112,9 @@ Ainda faltam validar o save local de ponta a ponta, definir resultados explícit
 - exibir a interface interna do jogo;
 - transformar o estado do jogo em dados serializáveis;
 - manter uma cópia local do estado recebido;
-- enviar intenções de ações à API;
+- acumular cliques pendentes e enviar intenções em lotes idempotentes;
+- enviar as demais intenções de ações à API;
+- manter previsões visuais separadas do estado confirmado;
 - exibir somente os resultados confirmados pelo backend no fluxo online.
 
 ### Site
@@ -110,6 +130,8 @@ Ainda faltam validar o save local de ponta a ponta, definir resultados explícit
 - armazenar e recuperar o progresso;
 - validar ações que alteram a economia;
 - calcular e aplicar os resultados oficiais das ações;
+- controlar idempotência, limites e concorrência dos comandos;
+- calcular produção passiva com tempo e taxas oficiais;
 - calcular a pontuação oficial e o ranking;
 - fornecer a API usada pelo site e pelo Godot.
 
@@ -179,29 +201,27 @@ O estado global mínimo foi substituído por um modelo tipado que concentra `sav
 
 `to_dict()` e `from_dict()` estão implementados, incluindo modelos aninhados, campos, tipos, `save_version`, IDs duplicados e referências de `CatUpgrade`. Existe teste de round-trip, mas ele ainda precisa ser executado em ambiente com o CLI do Godot.
 
-### 4. Implementar save local de teste (em andamento)
+### 4. Validar o contrato JSON (pendente de execução)
 
-Provar o contrato pelo fluxo: criar estado, converter para JSON, salvar, recarregar, reconstruir e validar. Arquivos ausentes, inválidos ou incompatíveis devem ser tratados. Esse arquivo é uma ferramenta de teste e desenvolvimento; não é o progresso oficial do modo online.
+Provar o contrato pelo fluxo em memória: criar estado, converter para `Dictionary`, serializar para JSON, interpretar, reconstruir e comparar. O teste já existe e precisa ser executado com o CLI do Godot.
 
-### 5. Isolar a persistência
+### 5. Separar consulta de estado e ações remotas
 
-O contrato `SaveRepository` e o `LocalSaveRepository` isolam o experimento de arquivo local. Gameplay e entidades não devem acessar arquivo ou rede diretamente.
+Os scripts experimentais `SaveRepository` e `LocalSaveRepository` foram removidos. Gameplay e entidades não devem acessar `HTTPRequest` diretamente. A camada de rede deve separar carregamento do estado oficial e envio de comandos.
 
 ```text
-Teste/desenvolvimento local
-   └── SaveRepository
-       └── LocalSaveRepository
-
 Modo online
    ├── GameStateQuery → carrega o estado oficial
-   └── GameActionClient → envia ações ao backend
+   └── GameActionClient
+       ├── envia ações pontuais
+       └── envia lotes de cliques
 ```
 
-Uma futura integração HTTP não deve implementar `save_game(game_state)` para enviar todo o estado ao Java. Ela deve separar a consulta do estado do envio assíncrono de comandos. Resultados de rede também devem distinguir sucesso, ausência, falha de autenticação, conflito, dados inválidos e indisponibilidade.
+A integração HTTP não deve implementar `save_game(game_state)`. Ela será assíncrona e seus resultados devem distinguir sucesso, ausência, falha de autenticação, conflito, dados inválidos e indisponibilidade.
 
 ### 6. Separar a regra de clique da UI e da cena (concluído no fluxo local)
 
-O clique chama `game_state.earn_food(click_power)`, que atualiza `food` e `total_food_earned`, e a UI apresenta `game_state.food`. No modo online autoritativo, esse fluxo será adaptado para enviar a ação de clique e aplicar a resposta confirmada pelo Java.
+O clique chama `game_state.earn_food(click_power)`, que atualiza `food` e `total_food_earned`, e a UI apresenta `game_state.food`. Esse é apenas o fluxo local atual. No modo online, um componente de lote contará cliques pendentes, a UI mostrará uma previsão e `GameActionClient` enviará periodicamente `click_count`; somente o Java calculará a ração oficial.
 
 ### 7. Validar Web e comunicação HTTP
 
@@ -223,11 +243,12 @@ jogo/src/
 │   ├── dados dos gatos
 │   ├── regras de compra
 │   └── regras de produção e progressão
-├── persistence/
-│   ├── contrato de persistência
-│   └── save local
 ├── network/
-│   └── cliente da API
+│   ├── consulta de estado
+│   ├── cliente de ações
+│   └── resultados e erros da API
+├── interaction/
+│   └── agrupador de cliques
 ├── principal/
 └── debug/
 ```
@@ -241,7 +262,7 @@ Não é necessário terminar o núcleo inteiro do jogo para começar o Java. O b
 - [x] um estado mínimo e versionado estiver definido;
 - [x] o round-trip em memória entre estado e JSON estiver implementado;
 - [x] a regra local de clique estiver separada da UI;
-- [ ] salvar e carregar arquivo local estiver validado no Godot;
+- [ ] o teste de round-trip estiver validado no Godot;
 - [ ] a exportação Web abrir corretamente;
 - [ ] houver um rascunho dos dados que a API receberá e devolverá.
 
@@ -269,11 +290,11 @@ Login no site
 | 1 | Estado e contrato JSON | Implementado; validação no Godot pendente | Base da integração |
 | 2 | Exportação Web e cliente HTTP | Pendente | Canal de integração |
 | 3 | Backend, banco e autenticação | Pendente | Identidade e persistência oficial |
-| 4 | Save remoto por jogador | Pendente | Primeiro corte completo |
+| 4 | Progresso remoto por jogador | Pendente | Primeiro corte completo e autoritativo |
 | 5 | Clique e ganho de ração | Integrado localmente ao `GameState` | Ação a ser enviada e calculada pelo backend |
 | 6 | Modelo de CatUpgrade | Implementado | Inclui `AUTOMATION` e exige `cat_id` |
 | 7 | Modelo de Upgrade | Implementado | Contrato inicial estabilizado |
-| 8 | Compra de gatos, upgrades e ganho passivo | Pendente, posterior | Não bloqueia o início do Java |
+| 8 | Compra de gatos, upgrades e ganho passivo | Pendente, posterior | Comandos e cálculo temporal no backend |
 | 9 | Progressão e ranking | Pendente | Calculados oficialmente no backend |
 | 10 | Nomear parque | Operação de domínio implementada, sem UI | Primeiro comando simples para testar persistência remota |
 | 11 | Gerenciar e customizar gatos | Pendente | Evolução posterior do save |
