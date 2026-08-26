@@ -22,6 +22,18 @@ O contrato JSON usa chaves em `snake_case`. O modelo `Cat` usa `cat_id`, `cat_ty
 
 `Automation` e `Upgrade` permanecem classes distintas. `Automation` representa produção passiva associada obrigatoriamente a um `cat_id`. `Upgrade` representa melhorias gerais do jogador, como `click_power`, e não possui `cat_id`.
 
+O contrato JSON atual de `Upgrade` é:
+
+```json
+{
+  "upgrade_id": "click-power-basic",
+  "upgrade_type": "CLICK_POWER",
+  "upgrade_level": 1
+}
+```
+
+O `upgrade_id` e o `upgrade_level` oficiais são controlados pelo backend Java. O Godot não incrementa o nível diretamente: ele envia a intenção de melhorar, e o backend valida custo e saldo antes de devolver o `Upgrade` atualizado.
+
 Não será criado, neste momento, um modelo genérico de upgrade com `cat_id` opcional. Um campo que só se aplica a parte dos objetos indica responsabilidades diferentes. Caso surjam futuramente outras melhorias específicas de gato, como bônus de sorte ou velocidade, a necessidade de generalização será avaliada naquele momento.
 
 O `cat_id` é gerado e controlado exclusivamente pelo backend Java. O cliente Godot não cria identificadores de gatos; um `Cat` oficial é reconstruído a partir dos dados validados recebidos do servidor.

@@ -24,6 +24,8 @@ As chaves genéricas `id` e `type` não fazem parte do contrato JSON de `Cat`.
 
 `Upgrade` é uma classe separada para representar melhorias gerais do jogador, como `click_power`, e não possui `cat_id`.
 
+O contrato JSON implementado de `Upgrade` usa `upgrade_id`, `upgrade_type` e `upgrade_level`. O identificador e o nível oficial são controlados pelo backend Java; o Godot apenas reconstrói o objeto validado recebido do servidor.
+
 Não será criado um modelo genérico de upgrade com `cat_id` opcional. Caso surjam futuramente outros tipos de melhoria específica de gato, a necessidade de generalização será avaliada naquele momento.
 
 ## Sequência de implementação
@@ -35,10 +37,10 @@ Não será criado um modelo genérico de upgrade com `cat_id` opcional. Caso sur
 - [ ] Definir a associação obrigatória de `Automation` com `cat_id`.
 - [ ] Implementar `to_dict()` e `from_dict()`.
 - [ ] Validar campos obrigatórios e tipos de `Automation`.
-- [ ] Criar `Upgrade` como `RefCounted`.
-- [ ] Manter `Upgrade` sem `cat_id`.
-- [ ] Implementar `to_dict()` e `from_dict()`.
-- [ ] Validar campos obrigatórios e tipos de `Upgrade`.
+- [x] Criar `Upgrade` como `RefCounted`.
+- [x] Manter `Upgrade` sem `cat_id`.
+- [x] Implementar `to_dict()` e `from_dict()` para `Upgrade`.
+- [x] Validar campos obrigatórios e tipos de `Upgrade`.
 
 ### 2. Criar GameState
 
