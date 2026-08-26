@@ -30,20 +30,22 @@ Não será criado um `Upgrade` geral com `cat_id` opcional. Melhorias específic
 
 ## Sequência de implementação
 
-### 1. Criar os modelos mínimos de CatUpgrade e Upgrade
+### 1. Criar os modelos mínimos de CatUpgrade e Upgrade — concluído
 
-- [ ] Criar `CatUpgrade` como `RefCounted`.
-- [ ] Usar tipagem estática em propriedades, parâmetros e retornos.
-- [ ] Definir a associação obrigatória de `CatUpgrade` com `cat_id`.
-- [ ] Criar o tipo inicial `AUTOMATION`.
-- [ ] Implementar `to_dict()` e `from_dict()`.
-- [ ] Validar campos obrigatórios e tipos de `CatUpgrade`.
+- [x] Criar `CatUpgrade` como `RefCounted`.
+- [x] Usar tipagem estática em propriedades, parâmetros e retornos.
+- [x] Definir a associação obrigatória de `CatUpgrade` com `cat_id`.
+- [x] Criar o tipo inicial `AUTOMATION`.
+- [x] Implementar `to_dict()` e `from_dict()`.
+- [x] Validar campos obrigatórios e tipos de `CatUpgrade`.
 - [x] Criar `Upgrade` como `RefCounted`.
 - [x] Manter `Upgrade` sem `cat_id`.
 - [x] Implementar `to_dict()` e `from_dict()` para `Upgrade`.
 - [x] Validar campos obrigatórios e tipos de `Upgrade`.
 
 ### 2. Criar GameState
+
+Este é o próximo passo da preparação do Godot.
 
 - [ ] Criar um estado agregado e independente da UI.
 - [ ] Adicionar `save_version`.
