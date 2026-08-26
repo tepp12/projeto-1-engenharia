@@ -38,7 +38,7 @@ var status: Status # enum definido em Ativo ou Inativo (estado do gato)
 
 
 
-func _init(id: String, type: String, cat_name: String, appearance: String):
+func _init(id: String, type: String, cat_name: String, appearance: String) -> void:
 	assert(id.strip_edges() != "", "cat_id não pode ser vazio")
 	assert(type.strip_edges() != "", "cat_type não pode ser vazio")
 	assert(appearance.strip_edges() != "", "appearance_id não pode ser vazio")
@@ -62,30 +62,35 @@ static func from_dict(data: Dictionary) -> Cat:
 		push_error("Dados de gato incompletos: " + str(data))
 		return null
 
-	var id = data["cat_id"]
-	var type = data["cat_type"]
-	var cat_name = data["name"]
-	var appearance = data["appearance_id"]
-	var status_str = data["status"]
+	var raw_id: Variant = data["cat_id"]
+	var raw_type: Variant = data["cat_type"]
+	var raw_name: Variant = data["name"]
+	var raw_appearance: Variant = data["appearance_id"]
+	var raw_status: Variant = data["status"]
 
-	if typeof(id) != TYPE_STRING or id.strip_edges() == "":
-		push_error("cat_id inválido: " + str(id))
+	if typeof(raw_id) != TYPE_STRING or String(raw_id).strip_edges() == "":
+		push_error("cat_id inválido: " + str(raw_id))
 		return null
-	if typeof(type) != TYPE_STRING or type.strip_edges() == "":
-		push_error("cat_type inválido: " + str(type))
+	if typeof(raw_type) != TYPE_STRING or String(raw_type).strip_edges() == "":
+		push_error("cat_type inválido: " + str(raw_type))
 		return null
-	if typeof(cat_name) != TYPE_STRING or cat_name.strip_edges() == "" or cat_name.length() > NOME_MAX_CARACTERES:
-		push_error("name inválido: " + str(cat_name))
+	if typeof(raw_name) != TYPE_STRING or String(raw_name).strip_edges() == "" or String(raw_name).length() > NOME_MAX_CARACTERES:
+		push_error("name inválido: " + str(raw_name))
 		return null
-	if typeof(appearance) != TYPE_STRING or appearance.strip_edges() == "":
-		push_error("appearance_id inválido: " + str(appearance))
+	if typeof(raw_appearance) != TYPE_STRING or String(raw_appearance).strip_edges() == "":
+		push_error("appearance_id inválido: " + str(raw_appearance))
 		return null
-	if typeof(status_str) != TYPE_STRING or not Status.keys().has(status_str):
-		push_error("Status desconhecido: " + str(status_str))
+	if typeof(raw_status) != TYPE_STRING or not Status.keys().has(String(raw_status)):
+		push_error("Status desconhecido: " + str(raw_status))
 		return null
 
-	var new_cat := Cat.new(id, type, cat_name, appearance)
-	new_cat.status = Status[status_str]
+	var id: String = String(raw_id)
+	var type: String = String(raw_type)
+	var cat_name: String = String(raw_name)
+	var appearance: String = String(raw_appearance)
+	var status_name: String = String(raw_status)
+	var new_cat: Cat = Cat.new(id, type, cat_name, appearance)
+	new_cat.status = Status[status_name]
 	return new_cat
 
 func _to_string() -> String:
