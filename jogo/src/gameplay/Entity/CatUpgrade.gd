@@ -68,7 +68,7 @@ static func from_dict(data: Dictionary) -> CatUpgrade:
 	if not CatUpgradeType.keys().has(type_name):
 		push_error("cat_upgrade_type desconhecido: " + type_name)
 		return null
-	if typeof(raw_cat_upgrade_level) != TYPE_INT or int(raw_cat_upgrade_level) < 1:
+	if not _is_integer_number(raw_cat_upgrade_level) or int(raw_cat_upgrade_level) < 1:
 		push_error("cat_upgrade_level inválido: " + str(raw_cat_upgrade_level))
 		return null
 
@@ -78,6 +78,14 @@ static func from_dict(data: Dictionary) -> CatUpgrade:
 	var level: int = int(raw_cat_upgrade_level)
 
 	return CatUpgrade.new(id, upgrade_type, level, cat)
+
+
+static func _is_integer_number(value: Variant) -> bool:
+	if typeof(value) != TYPE_INT and typeof(value) != TYPE_FLOAT:
+		return false
+
+	var numeric_value: float = float(value)
+	return is_finite(numeric_value) and numeric_value == floor(numeric_value)
 
 
 func _to_string() -> String:

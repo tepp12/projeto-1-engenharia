@@ -5,9 +5,9 @@ const CURRENT_SAVE_VERSION: int = 1
 const DEFAULT_PARK_NAME: String = "Parque do Jogador"
 
 var _park_name: String = DEFAULT_PARK_NAME
-var _food: float = 0.0
-var _total_food_earned: float = 0.0
-var _click_power: float = 1.0
+var _food: int = 0
+var _total_food_earned: int = 0
+var _click_power: int = 1
 var _cats: Array[Cat] = []
 var _cat_upgrades: Array[CatUpgrade] = []
 var _upgrades: Array[Upgrade] = []
@@ -20,15 +20,15 @@ var park_name: String:
 	get:
 		return _park_name
 
-var food: float:
+var food: int:
 	get:
 		return _food
 
-var total_food_earned: float:
+var total_food_earned: int:
 	get:
 		return _total_food_earned
 
-var click_power: float:
+var click_power: int:
 	get:
 		return _click_power
 
@@ -45,8 +45,8 @@ var upgrades: Array[Upgrade]:
 		return _upgrades.duplicate()
 
 
-func earn_food(amount: float) -> bool:
-	if amount <= 0.0:
+func earn_food(amount: int) -> bool:
+	if amount <= 0:
 		push_error("A quantidade de ração recebida deve ser maior que zero")
 		return false
 
@@ -115,22 +115,22 @@ static func from_dict(data: Dictionary) -> GameState:
 	var raw_cat_upgrades: Variant = data["cat_upgrades"]
 	var raw_upgrades: Variant = data["upgrades"]
 
-	if typeof(raw_save_version) != TYPE_INT or int(raw_save_version) != CURRENT_SAVE_VERSION:
+	if not _is_integer_number(raw_save_version) or int(raw_save_version) != CURRENT_SAVE_VERSION:
 		push_error("save_version incompatível: " + str(raw_save_version))
 		return null
 	if typeof(raw_park_name) != TYPE_STRING or String(raw_park_name).strip_edges().is_empty():
 		push_error("park_name inválido: " + str(raw_park_name))
 		return null
-	if not _is_number(raw_food) or float(raw_food) < 0.0:
+	if not _is_integer_number(raw_food) or int(raw_food) < 0:
 		push_error("food inválido: " + str(raw_food))
 		return null
-	if not _is_number(raw_total_food_earned) or float(raw_total_food_earned) < 0.0:
+	if not _is_integer_number(raw_total_food_earned) or int(raw_total_food_earned) < 0:
 		push_error("total_food_earned inválido: " + str(raw_total_food_earned))
 		return null
-	if float(raw_total_food_earned) < float(raw_food):
+	if int(raw_total_food_earned) < int(raw_food):
 		push_error("total_food_earned não pode ser menor que food")
 		return null
-	if not _is_number(raw_click_power) or float(raw_click_power) <= 0.0:
+	if not _is_integer_number(raw_click_power) or int(raw_click_power) <= 0:
 		push_error("click_power inválido: " + str(raw_click_power))
 		return null
 	if typeof(raw_cats) != TYPE_ARRAY or typeof(raw_cat_upgrades) != TYPE_ARRAY or typeof(raw_upgrades) != TYPE_ARRAY:
@@ -190,9 +190,9 @@ static func from_dict(data: Dictionary) -> GameState:
 
 	var restored_state: GameState = GameState.new()
 	restored_state._park_name = String(raw_park_name).strip_edges()
-	restored_state._food = float(raw_food)
-	restored_state._total_food_earned = float(raw_total_food_earned)
-	restored_state._click_power = float(raw_click_power)
+	restored_state._food = int(raw_food)
+	restored_state._total_food_earned = int(raw_total_food_earned)
+	restored_state._click_power = int(raw_click_power)
 	restored_state._cats = restored_cats
 	restored_state._cat_upgrades = restored_cat_upgrades
 	restored_state._upgrades = restored_upgrades
@@ -201,3 +201,11 @@ static func from_dict(data: Dictionary) -> GameState:
 
 static func _is_number(value: Variant) -> bool:
 	return typeof(value) == TYPE_INT or typeof(value) == TYPE_FLOAT
+
+
+static func _is_integer_number(value: Variant) -> bool:
+	if not _is_number(value):
+		return false
+
+	var numeric_value: float = float(value)
+	return is_finite(numeric_value) and numeric_value == floor(numeric_value)
