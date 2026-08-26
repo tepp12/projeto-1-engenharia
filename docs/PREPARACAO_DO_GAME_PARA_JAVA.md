@@ -51,11 +51,13 @@ O `cat_id` é gerado e controlado exclusivamente pelo backend Java. O cliente Go
 
 ## O mínimo necessário no Godot
 
-### 1. Criar os modelos mínimos de CatUpgrade e Upgrade
+### 1. Modelos mínimos de CatUpgrade e Upgrade (concluído)
 
-Criar classes `RefCounted`, tipadas e independentes da interface, seguindo o padrão de `Cat`: validação, `to_dict()` e `from_dict()`. `CatUpgrade` deve exigir `cat_id` e começar com o tipo `AUTOMATION`; `Upgrade` não deve possuir `cat_id`.
+As classes `CatUpgrade` e `Upgrade` foram criadas como `RefCounted`, tipadas e independentes da interface, seguindo o padrão de `Cat`: validação, `to_dict()` e `from_dict()`. `CatUpgrade` exige `cat_id` e começa com o tipo `AUTOMATION`; `Upgrade` não possui `cat_id`.
 
 ### 2. Criar GameState
+
+Este é o próximo passo da preparação do Godot.
 
 Criar um estado agregado e independente da interface contendo:
 
@@ -126,7 +128,7 @@ O backend Java deve respeitar as chaves `snake_case` ao receber ou devolver os d
 
 O desenvolvimento do backend pode começar quando:
 
-- [ ] `CatUpgrade` e `Upgrade` possuírem modelos mínimos, tipados e validáveis;
+- [x] `CatUpgrade` e `Upgrade` possuírem modelos mínimos, tipados e validáveis;
 - [ ] `GameState` agregar todo o estado persistente;
 - [ ] `GameState` puder ser convertido para JSON e reconstruído;
 - [ ] tipos, campos obrigatórios e `save_version` forem validados;

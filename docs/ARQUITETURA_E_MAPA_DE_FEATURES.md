@@ -57,8 +57,10 @@ Já existe:
 - contrato JSON de `Cat` padronizado com `cat_id` e `cat_type`.
 - modelo `Upgrade` com tipagem, validação, `to_dict()` e `from_dict()`;
 - contrato JSON de `Upgrade` padronizado com `upgrade_id`, `upgrade_type` e `upgrade_level`.
+- modelo `CatUpgrade` com tipagem, validação, `to_dict()` e `from_dict()`;
+- contrato JSON de `CatUpgrade` padronizado com `cat_upgrade_id`, `cat_id`, `cat_upgrade_type` e `cat_upgrade_level`, começando pelo tipo `AUTOMATION`.
 
-Ainda faltam o modelo de `CatUpgrade`, o `GameState`, a serialização do estado agregado, a persistência local isolada, a separação da regra de clique, a preparação Web/HTTP e o restante do ciclo econômico.
+Ainda faltam o `GameState`, a serialização do estado agregado, a persistência local isolada, a separação da regra de clique, a preparação Web/HTTP e o restante do ciclo econômico.
 
 ## Separação de responsabilidades
 
@@ -108,9 +110,9 @@ Login, senha, perfil e ranking não pertencem ao Godot. O jogo deve receber apen
 
 A sequência abaixo deve ser seguida na ordem definida. O detalhamento operacional está em `docs/PLANO_DE_TASKS.md`.
 
-### 1. Criar os modelos mínimos de CatUpgrade e Upgrade
+### 1. Modelos mínimos de CatUpgrade e Upgrade (concluído)
 
-Criar classes `RefCounted`, tipadas e independentes da interface, com validação, `to_dict()` e `from_dict()`.
+As classes `CatUpgrade` e `Upgrade` foram criadas como `RefCounted`, tipadas e independentes da interface, com validação, `to_dict()` e `from_dict()`.
 
 `CatUpgrade` é uma classe própria para melhorias vinculadas obrigatoriamente a um `cat_id`. `AUTOMATION` é seu primeiro tipo e representa a automatização da produção passiva de um gato específico. Outros tipos, como sorte ou velocidade, poderão ser adicionados futuramente sem misturar essas melhorias com os upgrades gerais.
 
@@ -230,14 +232,14 @@ Depois dessa prova, a API pode evoluir para receber ações como compra de gato,
 
 ## Mapa de features
 
-| Ordem | Feature | Situação na `dev` | Relação com o sistema online |
+| Ordem | Feature | Situação na `main` | Relação com o sistema online |
 |---:|---|---|---|
 | 1 | Estado e contrato de save | Pendente | Base da integração |
 | 2 | Exportação Web e cliente HTTP | Pendente | Canal de integração |
 | 3 | Backend, banco e autenticação | Pendente | Identidade e persistência oficial |
 | 4 | Save remoto por jogador | Pendente | Primeiro corte completo |
 | 5 | Clique e ganho de ração | Implementação básica | Ação a ser sincronizada e validada |
-| 6 | Modelo de CatUpgrade | Pendente | Inclui `AUTOMATION` e exige `cat_id` |
+| 6 | Modelo de CatUpgrade | Implementado | Inclui `AUTOMATION` e exige `cat_id` |
 | 7 | Modelo de Upgrade | Implementado | Contrato inicial estabilizado |
 | 8 | Compra de gatos, upgrades e ganho passivo | Pendente, posterior | Não bloqueia o início do Java |
 | 9 | Progressão e ranking | Pendente | Calculados oficialmente no backend |
