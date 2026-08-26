@@ -20,23 +20,24 @@ O modelo `Cat` usa:
 
 As chaves genéricas `id` e `type` não fazem parte do contrato JSON de `Cat`.
 
-`Automation` é uma classe própria para representar produção passiva vinculada obrigatoriamente a um `cat_id`.
+`CatUpgrade` é uma classe própria para representar melhorias vinculadas obrigatoriamente a um `cat_id`. Seu primeiro tipo é `AUTOMATION`, responsável por automatizar a produção passiva do gato associado. Outros tipos específicos, como sorte ou velocidade, poderão ser adicionados futuramente.
 
 `Upgrade` é uma classe separada para representar melhorias gerais do jogador, como `click_power`, e não possui `cat_id`.
 
 O contrato JSON implementado de `Upgrade` usa `upgrade_id`, `upgrade_type` e `upgrade_level`. O identificador e o nível oficial são controlados pelo backend Java; o Godot apenas reconstrói o objeto validado recebido do servidor.
 
-Não será criado um modelo genérico de upgrade com `cat_id` opcional. Caso surjam futuramente outros tipos de melhoria específica de gato, a necessidade de generalização será avaliada naquele momento.
+Não será criado um `Upgrade` geral com `cat_id` opcional. Melhorias específicas de gato pertencem a `CatUpgrade`; a automação deixa de ser uma classe e passa a ser o tipo inicial dessa entidade.
 
 ## Sequência de implementação
 
-### 1. Criar os modelos mínimos de Automation e Upgrade
+### 1. Criar os modelos mínimos de CatUpgrade e Upgrade
 
-- [ ] Criar `Automation` como `RefCounted`.
+- [ ] Criar `CatUpgrade` como `RefCounted`.
 - [ ] Usar tipagem estática em propriedades, parâmetros e retornos.
-- [ ] Definir a associação obrigatória de `Automation` com `cat_id`.
+- [ ] Definir a associação obrigatória de `CatUpgrade` com `cat_id`.
+- [ ] Criar o tipo inicial `AUTOMATION`.
 - [ ] Implementar `to_dict()` e `from_dict()`.
-- [ ] Validar campos obrigatórios e tipos de `Automation`.
+- [ ] Validar campos obrigatórios e tipos de `CatUpgrade`.
 - [x] Criar `Upgrade` como `RefCounted`.
 - [x] Manter `Upgrade` sem `cat_id`.
 - [x] Implementar `to_dict()` e `from_dict()` para `Upgrade`.
@@ -51,7 +52,7 @@ Não será criado um modelo genérico de upgrade com `cat_id` opcional. Caso sur
 - [ ] Adicionar `total_food_earned`.
 - [ ] Adicionar `click_power`.
 - [ ] Adicionar `cats`.
-- [ ] Adicionar `automations`.
+- [ ] Adicionar `cat_upgrades`.
 - [ ] Adicionar `upgrades`.
 - [ ] Usar tipos estáticos sempre que declarativos no GDScript.
 
@@ -65,7 +66,7 @@ O estado mínimo esperado é:
   "total_food_earned": 0,
   "click_power": 1,
   "cats": [],
-  "automations": [],
+  "cat_upgrades": [],
   "upgrades": []
 }
 ```
@@ -170,4 +171,4 @@ As seguintes funcionalidades não bloqueiam o início do backend Java:
 - ganho offline;
 - arte, música e interface finais.
 
-Os modelos mínimos de `Automation` e `Upgrade` fazem parte desta sequência porque pertencem ao contrato persistente. Suas regras funcionais serão implementadas posteriormente.
+Os modelos mínimos de `CatUpgrade` e `Upgrade` fazem parte desta sequência porque pertencem ao contrato persistente. A produção passiva funcional do tipo `AUTOMATION` será implementada posteriormente.
