@@ -6,6 +6,8 @@ Fechar o contrato mínimo do lado Godot antes da integração com o backend Java
 
 Esta etapa não exige concluir o ciclo econômico do jogo. O objetivo é tornar o estado tipado, serializável, validável e independente da implementação de persistência.
 
+No modo online, o backend Java será autoritativo. O Godot manterá uma cópia do estado para apresentação e enviará ações ao servidor; não enviará um `GameState` econômico completo para ser aceito como progresso oficial. O save local desta sequência é somente uma prova do contrato e uma ferramenta de desenvolvimento.
+
 ## Decisões de modelagem
 
 O contrato JSON usa chaves em `snake_case`.
@@ -43,20 +45,19 @@ Não será criado um `Upgrade` geral com `cat_id` opcional. Melhorias específic
 - [x] Implementar `to_dict()` e `from_dict()` para `Upgrade`.
 - [x] Validar campos obrigatórios e tipos de `Upgrade`.
 
-### 2. Criar GameState
+### 2. Criar GameState — concluído
 
-Este é o próximo passo da preparação do Godot.
-
-- [ ] Criar um estado agregado e independente da UI.
-- [ ] Adicionar `save_version`.
-- [ ] Adicionar `park_name`.
-- [ ] Adicionar `food`.
-- [ ] Adicionar `total_food_earned`.
-- [ ] Adicionar `click_power`.
-- [ ] Adicionar `cats`.
-- [ ] Adicionar `cat_upgrades`.
-- [ ] Adicionar `upgrades`.
-- [ ] Usar tipos estáticos sempre que declarativos no GDScript.
+- [x] Criar um estado agregado e independente da UI.
+- [x] Adicionar `save_version`.
+- [x] Adicionar `park_name`.
+- [x] Adicionar `food`.
+- [x] Adicionar `total_food_earned`.
+- [x] Adicionar `click_power`.
+- [x] Adicionar `cats`.
+- [x] Adicionar `cat_upgrades`.
+- [x] Adicionar `upgrades`.
+- [x] Usar tipos estáticos sempre que declarativos no GDScript.
+- [x] Proteger as invariantes principais e expor leitura controlada.
 
 O estado mínimo esperado é:
 
@@ -73,27 +74,29 @@ O estado mínimo esperado é:
 }
 ```
 
-### 3. Implementar a serialização completa de GameState
+### 3. Implementar a serialização completa de GameState — implementado, execução do teste pendente
 
-- [ ] Implementar `to_dict()`.
-- [ ] Implementar `from_dict()`.
-- [ ] Serializar os modelos aninhados.
-- [ ] Reconstruir os modelos aninhados.
-- [ ] Validar campos obrigatórios.
-- [ ] Validar os tipos recebidos.
-- [ ] Validar `save_version`.
-- [ ] Rejeitar estado incompatível ou inválido.
-- [ ] Confirmar que todo o JSON usa `snake_case`.
+- [x] Implementar `to_dict()`.
+- [x] Implementar `from_dict()`.
+- [x] Serializar os modelos aninhados.
+- [x] Reconstruir os modelos aninhados.
+- [x] Validar campos obrigatórios.
+- [x] Validar os tipos recebidos.
+- [x] Validar `save_version`.
+- [x] Rejeitar estado incompatível ou inválido.
+- [x] Confirmar que todo o JSON usa `snake_case`.
+- [x] Criar teste de round-trip por JSON.
+- [ ] Executar o teste com o CLI do Godot.
 
-### 4. Implementar save local
+### 4. Implementar save local de teste — em andamento
 
-- [ ] Criar um estado mínimo.
-- [ ] Converter o estado para JSON.
-- [ ] Salvar o JSON localmente.
-- [ ] Ler o arquivo salvo.
-- [ ] Reconstruir o `GameState`.
-- [ ] Validar o estado reconstruído.
-- [ ] Tratar arquivo ausente, inválido ou incompatível.
+- [x] Criar um estado mínimo.
+- [x] Converter o estado para JSON.
+- [x] Implementar a gravação do JSON localmente.
+- [x] Implementar a leitura do arquivo salvo.
+- [x] Reconstruir o `GameState` a partir do arquivo.
+- [x] Implementar tratamento de arquivo ausente, conteúdo inválido e versão incompatível.
+- [ ] Validar o fluxo completo no Godot.
 
 A prova do contrato deve executar o fluxo:
 
@@ -106,32 +109,41 @@ criar estado
 → validar
 ```
 
+O resultado desse fluxo não é uma fonte de verdade online. Ele não deve ser sincronizado automaticamente nem enviado ao Java como estado confiável.
+
 ### 5. Isolar a persistência
 
-- [ ] Definir um contrato de persistência, como `SaveRepository`.
-- [ ] Fazer o gameplay depender desse contrato.
-- [ ] Criar `LocalSaveRepository`.
-- [ ] Manter acesso a arquivos fora das regras de gameplay.
-- [ ] Reservar `ApiSaveRepository` como implementação futura.
+- [x] Definir um contrato local de persistência, `SaveRepository`.
+- [x] Criar a implementação inicial de `LocalSaveRepository`.
+- [x] Manter acesso a arquivos fora das regras de gameplay.
+- [ ] Criar testes específicos para `LocalSaveRepository`.
 - [ ] Manter requisições HTTP fora das entidades e regras do domínio.
+- [ ] Definir resultados explícitos para ausência, dados inválidos e falhas de persistência.
+- [ ] Definir separadamente a consulta remota de estado e o envio de ações.
 
 A dependência esperada é:
 
 ```text
-Gameplay
+Teste/desenvolvimento local
    └── SaveRepository
-       ├── LocalSaveRepository
-       └── ApiSaveRepository
+       └── LocalSaveRepository
+
+Modo online autoritativo
+   ├── GameStateQuery
+   └── GameActionClient
 ```
 
-### 6. Separar a regra de clique da UI e da cena
+Não deve existir uma implementação remota genérica de `save_game(game_state)` que permita ao cliente sobrescrever o progresso oficial. A comunicação HTTP será assíncrona e baseada em carregar o estado e enviar comandos como `rename_park`, `click` e `buy_upgrade`.
 
-- [ ] Remover a alteração direta de `GlobalValues.dinheiro` do fluxo de clique.
-- [ ] Criar uma operação de domínio como `game_state.earn_food(amount)`.
-- [ ] Atualizar `food` nessa operação.
-- [ ] Atualizar `total_food_earned` nessa operação.
-- [ ] Fazer `clicker_gato.gd` apenas solicitar a ação.
-- [ ] Fazer a UI apenas apresentar o estado resultante.
+### 6. Separar a regra de clique da UI e da cena — concluído no fluxo local
+
+- [x] Remover a alteração direta de `GlobalValues.dinheiro` do fluxo de clique.
+- [x] Criar `game_state.earn_food(amount)`.
+- [x] Atualizar `food` nessa operação.
+- [x] Atualizar `total_food_earned` nessa operação.
+- [x] Fazer `clicker_gato.gd` solicitar a operação de domínio local.
+- [x] Fazer a UI apenas apresentar o estado resultante.
+- [ ] No modo online, substituir o cálculo local por uma ação confirmada pelo backend.
 
 ### 7. Validar exportação Web e HTTP
 
@@ -147,18 +159,18 @@ Gameplay
 
 A preparação estará concluída quando os sete passos anteriores estiverem validados.
 
-A primeira integração real poderá então substituir a persistência local:
+A primeira integração real não enviará o save local ao servidor. Ela carregará o estado oficial e enviará uma ação simples:
 
 ```text
 Godot Web
 → carregar estado pela API
-→ alterar um dado simples
-→ salvar pela API
+→ enviar `rename_park`
+→ Java validar e persistir
 → recarregar
 → confirmar a persistência
 ```
 
-`park_name` é um dado adequado para essa primeira prova por não depender das regras econômicas ainda pendentes.
+`park_name` é adequado para essa primeira prova por não depender das regras econômicas ainda pendentes. Depois dela, clique, compras e upgrades deverão seguir o mesmo princípio: o Godot envia a intenção e o Java calcula o resultado oficial.
 
 ## Fora do escopo desta sequência
 
