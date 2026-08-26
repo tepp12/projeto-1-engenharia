@@ -1,7 +1,6 @@
 class_name Upgrade
 extends RefCounted
 
-
 # Contrato de criação:
 # - upgrade_id é gerado e controlado pelo backend Java, nunca pelo cliente.
 # - Um Upgrade "oficial" só deve existir a partir de from_dict(), reconstruindo
@@ -16,9 +15,6 @@ extends RefCounted
 # - O backend valida saldo/custo, incrementa o nível no banco, e devolve o
 #   Upgrade atualizado. O Godot reconstrói o objeto via from_dict() com essa
 #   resposta — nunca fazendo upgrade.upgrade_level += 1 localmente.
-
-
-
 
 enum UpgradeType {
 	CLICK_POWER,
