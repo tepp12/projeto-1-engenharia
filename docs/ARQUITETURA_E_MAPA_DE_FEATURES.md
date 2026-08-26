@@ -24,7 +24,9 @@ Os três casos de uso centrais são:
 2. gastar ração em gatos ou upgrades;
 3. automatizar gatos para gerar ração passivamente.
 
-O projeto atual não termina no cliente Godot. Login, persistência remota e ranking fazem parte do sistema pretendido. O núcleo local continua necessário porque define o que será salvo e validado, mas deve ser desenvolvido pensando no contrato com o backend desde o início.
+O projeto atual não termina no cliente Godot. Login, persistência remota e ranking fazem parte do sistema pretendido. O backend Java é a fonte da verdade do progresso oficial. O estado local no Godot representa uma cópia usada pela interface e pelas mecânicas, mas não tem autoridade para conceder recursos, níveis, gatos ou pontuação.
+
+O save local existe somente para provar serialização, apoiar testes e permitir desenvolvimento sem a API. Ele não deve ser enviado posteriormente ao servidor como progresso confiável nem disputar autoridade com o banco.
 
 ## Objetivo arquitetural principal
 
@@ -42,7 +44,22 @@ Login no site
 
 Essa integração é uma feature transversal: ela afeta o modelo de dados, as regras econômicas, a persistência, a segurança, a exportação Web e a forma de calcular a progressão.
 
-## Estado atual na branch `main`
+## Autoridade e segurança
+
+No modo online, o Godot envia intenções, nunca resultados econômicos prontos. Por exemplo, envia `click`, `buy_cat` ou `buy_upgrade`; o Java identifica o jogador pela sessão, valida a ação, calcula seu efeito, persiste o novo estado e devolve a representação atualizada.
+
+```text
+Godot envia uma ação
+  → Java autentica e valida
+  → Java calcula o resultado
+  → banco persiste o estado oficial
+  → Java devolve o estado atualizado
+  → Godot atualiza sua cópia e a interface
+```
+
+O backend não deve aceitar um `GameState` completo enviado pelo cliente como fonte confiável. Mesmo sem arquivo local, o cliente e as requisições HTTP podem ser adulterados. Validação de formato no Godot melhora a robustez, mas não constitui proteção contra trapaça.
+
+## Estado atual do código
 
 O projeto Godot válido está em `jogo/`, com configuração em `jogo/project.godot`.
 
@@ -50,17 +67,23 @@ Já existe:
 
 - clique no gato para gerar ração;
 - contador visual de ração;
-- poder de clique no estado global;
+- `GameState` agregado e tipado, instanciado por `GlobalValues`;
+- `food`, `total_food_earned`, `click_power`, `park_name` e coleções do contrato;
+- invariantes básicas e propriedades públicas somente para leitura;
+- serialização e reconstrução por `to_dict()` e `from_dict()`;
+- teste de round-trip entre `GameState`, `Dictionary` e JSON;
 - resposta visual do gato ao mouse e ao clique;
-- overlay básico de FPS e versão.
+- overlay básico de FPS e versão;
 - modelo `Cat` com validação, `to_dict()` e `from_dict()`;
 - contrato JSON de `Cat` padronizado com `cat_id` e `cat_type`.
 - modelo `Upgrade` com tipagem, validação, `to_dict()` e `from_dict()`;
 - contrato JSON de `Upgrade` padronizado com `upgrade_id`, `upgrade_type` e `upgrade_level`.
 - modelo `CatUpgrade` com tipagem, validação, `to_dict()` e `from_dict()`;
-- contrato JSON de `CatUpgrade` padronizado com `cat_upgrade_id`, `cat_id`, `cat_upgrade_type` e `cat_upgrade_level`, começando pelo tipo `AUTOMATION`.
+- contrato JSON de `CatUpgrade` padronizado com `cat_upgrade_id`, `cat_id`, `cat_upgrade_type` e `cat_upgrade_level`, começando pelo tipo `AUTOMATION`;
+- clique integrado a `GameState.earn_food()` e UI lendo `GameState.food`;
+- contrato `SaveRepository` e implementação inicial de `LocalSaveRepository` em desenvolvimento.
 
-Ainda faltam o `GameState`, a serialização do estado agregado, a persistência local isolada, a separação da regra de clique, a preparação Web/HTTP e o restante do ciclo econômico.
+Ainda faltam validar o save local de ponta a ponta, definir resultados explícitos para erros de persistência, preparar Web/HTTP, implementar o backend autoritativo e desenvolver o restante do ciclo econômico. O teste do `GameState` e a verificação headless também dependem de execução em ambiente com o CLI do Godot disponível.
 
 ## Separação de responsabilidades
 
@@ -70,7 +93,9 @@ Ainda faltam o `GameState`, a serialização do estado agregado, a persistência
 - representar ração, gatos, upgrades específicos de gato e upgrades gerais;
 - exibir a interface interna do jogo;
 - transformar o estado do jogo em dados serializáveis;
-- consumir a API do backend para carregar e atualizar o progresso.
+- manter uma cópia local do estado recebido;
+- enviar intenções de ações à API;
+- exibir somente os resultados confirmados pelo backend no fluxo online.
 
 ### Site
 
@@ -84,6 +109,7 @@ Ainda faltam o `GameState`, a serialização do estado agregado, a persistência
 - autenticar e identificar o jogador;
 - armazenar e recuperar o progresso;
 - validar ações que alteram a economia;
+- calcular e aplicar os resultados oficiais das ações;
 - calcular a pontuação oficial e o ranking;
 - fornecer a API usada pelo site e pelo Godot.
 
@@ -145,32 +171,37 @@ Essa separação é intencional: `Upgrade` não possui `cat_id`, enquanto todo `
 
 O contrato JSON de `Cat` usa `cat_id`, `cat_type`, `name`, `appearance_id` e `status`, sempre em `snake_case`. As formas genéricas `id` e `type` não fazem parte desse contrato. O `cat_id` é gerado e controlado exclusivamente pelo backend Java.
 
-### 2. Criar GameState
+### 2. Criar GameState (concluído)
 
-Substituir o estado global mínimo por um modelo tipado que concentre `save_version`, `park_name`, `food`, `total_food_earned`, `click_power`, `cats`, `cat_upgrades` e `upgrades`. O estado não deve conter senha, e-mail ou permissões do usuário.
+O estado global mínimo foi substituído por um modelo tipado que concentra `save_version`, `park_name`, `food`, `total_food_earned`, `click_power`, `cats`, `cat_upgrades` e `upgrades`. O estado não contém senha, e-mail ou permissões do usuário.
 
-### 3. Implementar a serialização completa de GameState
+### 3. Implementar a serialização completa de GameState (concluído; validação no Godot pendente)
 
-Implementar `to_dict()` e `from_dict()`, incluindo os modelos aninhados, validação de campos, tipos e `save_version`.
+`to_dict()` e `from_dict()` estão implementados, incluindo modelos aninhados, campos, tipos, `save_version`, IDs duplicados e referências de `CatUpgrade`. Existe teste de round-trip, mas ele ainda precisa ser executado em ambiente com o CLI do Godot.
 
-### 4. Implementar save local
+### 4. Implementar save local de teste (em andamento)
 
-Provar o contrato pelo fluxo: criar estado, converter para JSON, salvar, recarregar, reconstruir e validar. Arquivos ausentes, inválidos ou incompatíveis devem ser tratados.
+Provar o contrato pelo fluxo: criar estado, converter para JSON, salvar, recarregar, reconstruir e validar. Arquivos ausentes, inválidos ou incompatíveis devem ser tratados. Esse arquivo é uma ferramenta de teste e desenvolvimento; não é o progresso oficial do modo online.
 
 ### 5. Isolar a persistência
 
-Definir um contrato como `SaveRepository`, com `LocalSaveRepository` nesta etapa e `ApiSaveRepository` durante a integração Java. Gameplay e entidades não devem acessar arquivo ou rede diretamente.
+O contrato `SaveRepository` e o `LocalSaveRepository` isolam o experimento de arquivo local. Gameplay e entidades não devem acessar arquivo ou rede diretamente.
 
 ```text
-Gameplay
+Teste/desenvolvimento local
    └── SaveRepository
-       ├── LocalSaveRepository
-       └── ApiSaveRepository
+       └── LocalSaveRepository
+
+Modo online
+   ├── GameStateQuery → carrega o estado oficial
+   └── GameActionClient → envia ações ao backend
 ```
 
-### 6. Separar a regra de clique da UI e da cena
+Uma futura integração HTTP não deve implementar `save_game(game_state)` para enviar todo o estado ao Java. Ela deve separar a consulta do estado do envio assíncrono de comandos. Resultados de rede também devem distinguir sucesso, ausência, falha de autenticação, conflito, dados inválidos e indisponibilidade.
 
-O clique deve chamar uma operação de domínio como `game_state.earn_food(amount)`, que atualiza `food` e `total_food_earned`. `clicker_gato.gd` deve apenas solicitar a ação, enquanto a UI deve apenas apresentar o estado.
+### 6. Separar a regra de clique da UI e da cena (concluído no fluxo local)
+
+O clique chama `game_state.earn_food(click_power)`, que atualiza `food` e `total_food_earned`, e a UI apresenta `game_state.food`. No modo online autoritativo, esse fluxo será adaptado para enviar a ação de clique e aplicar a resposta confirmada pelo Java.
 
 ### 7. Validar Web e comunicação HTTP
 
@@ -207,9 +238,10 @@ Essa estrutura é uma direção, não uma obrigação de criar todos os arquivos
 
 Não é necessário terminar o núcleo inteiro do jogo para começar o Java. O backend pode ser iniciado quando houver base suficiente para um primeiro contrato:
 
-- [ ] um estado mínimo e versionado estiver definido;
-- [ ] salvar e carregar JSON funcionar;
-- [ ] as regras econômicas estiverem separadas da UI;
+- [x] um estado mínimo e versionado estiver definido;
+- [x] o round-trip em memória entre estado e JSON estiver implementado;
+- [x] a regra local de clique estiver separada da UI;
+- [ ] salvar e carregar arquivo local estiver validado no Godot;
 - [ ] a exportação Web abrir corretamente;
 - [ ] houver um rascunho dos dados que a API receberá e devolverá.
 
@@ -223,27 +255,27 @@ Após os critérios anteriores, a primeira integração deve ser pequena e atrav
 Login no site
   → abrir o Godot Web
   → carregar um estado do backend
-  → alterar um dado simples do jogo
-  → salvar
+  → enviar a ação de renomear o parque
+  → backend validar e persistir
   → recarregar e confirmar a persistência
 ```
 
-Depois dessa prova, a API pode evoluir para receber ações como compra de gato, aquisição de `CatUpgrade` do tipo `AUTOMATION` e upgrade geral. O backend deve identificar o jogador pela sessão e nunca confiar em uma pontuação pronta enviada pelo cliente.
+`rename_park` é o primeiro comando adequado porque não altera a economia. Depois dessa prova, a API pode evoluir para receber ações como clique, compra de gato, aquisição de `CatUpgrade` do tipo `AUTOMATION` e upgrade geral. O backend deve identificar o jogador pela sessão e nunca confiar em saldo, poder, nível, identificador ou pontuação prontos enviados pelo cliente.
 
 ## Mapa de features
 
-| Ordem | Feature | Situação na `main` | Relação com o sistema online |
+| Ordem | Feature | Situação atual do código | Relação com o sistema online |
 |---:|---|---|---|
-| 1 | Estado e contrato de save | Pendente | Base da integração |
+| 1 | Estado e contrato JSON | Implementado; validação no Godot pendente | Base da integração |
 | 2 | Exportação Web e cliente HTTP | Pendente | Canal de integração |
 | 3 | Backend, banco e autenticação | Pendente | Identidade e persistência oficial |
 | 4 | Save remoto por jogador | Pendente | Primeiro corte completo |
-| 5 | Clique e ganho de ração | Implementação básica | Ação a ser sincronizada e validada |
+| 5 | Clique e ganho de ração | Integrado localmente ao `GameState` | Ação a ser enviada e calculada pelo backend |
 | 6 | Modelo de CatUpgrade | Implementado | Inclui `AUTOMATION` e exige `cat_id` |
 | 7 | Modelo de Upgrade | Implementado | Contrato inicial estabilizado |
 | 8 | Compra de gatos, upgrades e ganho passivo | Pendente, posterior | Não bloqueia o início do Java |
 | 9 | Progressão e ranking | Pendente | Calculados oficialmente no backend |
-| 10 | Nomear parque | Apenas representação visual | Bom dado simples para testar sincronização |
+| 10 | Nomear parque | Operação de domínio implementada, sem UI | Primeiro comando simples para testar persistência remota |
 | 11 | Gerenciar e customizar gatos | Pendente | Evolução posterior do save |
 | 12 | Minigames | Pendente | Não bloqueia a integração inicial |
 | 13 | Arte e música originais | Pendente | Não afeta a arquitetura online |
@@ -257,7 +289,7 @@ Para manter o quadro legível, a integração online deve ser tratada como o ép
 2. **Preparar Godot Web:** exportação, cliente HTTP, carregamento e tratamento de erros.
 3. **Criar backend Java:** Spring Boot, banco, autenticação e API do jogo.
 4. **Criar site autenticado:** cadastro, login, sessão, perfil e abertura do jogo.
-5. **Implementar save remoto:** associar o progresso à sessão e sincronizar Godot e backend.
+5. **Implementar progresso remoto autoritativo:** associar o progresso à sessão, carregar o estado oficial e processar ações sem aceitar estado econômico pronto do cliente.
 6. **Criar ranking:** definir os dados de progressão, calcular no backend e exibir no site.
 
 ## Próximo marco
@@ -269,8 +301,9 @@ Estado mínimo em JSON
   → exportação Godot Web
   → login no site
   → carregar save remoto
-  → alterar um dado do jogo
-  → salvar e recuperar o mesmo dado
+  → enviar `rename_park`
+  → Java validar e persistir
+  → recuperar o nome confirmado
 ```
 
 Depois dessa prova, compra de gatos, `CatUpgrade` do tipo `AUTOMATION`, upgrades gerais e ranking devem ser incorporados ao mesmo fluxo. Assim, cada nova mecânica já nasce integrada ao modelo persistente, em vez de exigir uma adaptação online tardia.
