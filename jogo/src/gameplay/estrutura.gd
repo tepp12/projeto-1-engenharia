@@ -4,39 +4,36 @@ extends Node
 
 var nome : String
 var custo_inicial : int
+var custo : int
 var renda : int
-var quantidade : float
-var buy_amount := 1
+var quantidade : int
 
-var upgrade_cost1 := 50.00
-var upgrade_cost2 := 100
-var upgrade_cost3 := 100
-var upgrade_cost4 := 1000
-var upgrade_cost5 := 10000
-var upgrade_cost6 := 50000
 
+# Called when the node enters the scene tree for the first time.
+func _ready() -> void:
+	pass # Replace with function body.
+
+
+# Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
-	gerar_renda();
+	pass
 
 #Aumenta o custo quando o jogador compra uma estrutura
-func atualizar_custo(upgrade) -> void:
-	upgrade = round(upgrade*(1+ (quantidade/100)))
+func _atualizar_custo() -> void:
+	custo = custo*(1+ (quantidade/100))
 
 #Chamado quando o usuario compra estruturas
-func _comprar_estrutura(_viewport: Node, event: InputEvent, _shape_idx: int, upgrade_cost) -> void:
-	if event is InputEventMouseButton and event.pressed:
-		if event.button_index == MOUSE_BUTTON_LEFT:
-			print("clicou")
-			for n in buy_amount:
-				#Gasta o dinheiro para comprar uma estrutura
-				if GlobalValues.dinheiro >= upgrade_cost:
-					GlobalValues.dinheiro += - upgrade_cost
-					quantidade += 1
-					atualizar_custo(upgrade_cost)
-				#Encerra o Loop se nao houver Dinheiro o bastante para comprar a estrutura
-				else:
-					break
+func _comprar(buy_amount :int) -> void:
+	for n in buy_amount:
+		#Gasta o dinheiro para comprar uma estrutura
+		if GlobalValues.dinheiro >= custo:
+			GlobalValues.dinheiro += -custo
+			quantidade += 1
+			_atualizar_custo()
+		#Encerra o Loop se nao houver Dinheiro o bastante para comprar a estrutura
+		else:
+			break
 
 #Gera renda para o jogador
-func gerar_renda() -> void:
+func _gerar_renda() -> void:
 	GlobalValues.dinheiro += renda

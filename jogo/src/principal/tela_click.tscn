@@ -6,6 +6,7 @@
 [ext_resource type="Script" uid="uid://651mfl2m15rd" path="res://src/principal/ui.gd" id="3_1kvvx"]
 [ext_resource type="Script" uid="uid://bd1fbyjkevsjj" path="res://src/gameplay/estrutura.gd" id="4_4ghun"]
 [ext_resource type="Texture2D" uid="uid://d0h082ghpxwpw" path="res://icon.svg" id="4_ndcgj"]
+[ext_resource type="Script" uid="uid://cn0n0aj4xrsl8" path="res://src/principal/click.gd" id="6_lpabh"]
 
 [sub_resource type="AtlasTexture" id="AtlasTexture_32f21"]
 atlas = ExtResource("2_6f21r")
@@ -238,6 +239,7 @@ scale = Vector2(0.049301147, 0.049301147)
 texture = ExtResource("4_ndcgj")
 
 [node name="Area2D" type="Area2D" parent="UI/Estruturas/Upgrade1" unique_id=248483457]
+script = ExtResource("6_lpabh")
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="UI/Estruturas/Upgrade1/Area2D" unique_id=755337203]
 position = Vector2(53, 15)
@@ -309,3 +311,4 @@ autostart = true
 [connection signal="input_event" from="Node2D/AnimatedSprite2D/ClickArea" to="Node2D/AnimatedSprite2D" method="_on_click_area_input_event"]
 [connection signal="mouse_entered" from="Node2D/AnimatedSprite2D/ClickArea" to="Node2D/AnimatedSprite2D" method="_mouse_entered"]
 [connection signal="mouse_exited" from="Node2D/AnimatedSprite2D/ClickArea" to="Node2D/AnimatedSprite2D" method="_mouse_exited"]
+[connection signal="input_event" from="UI/Estruturas/Upgrade1/Area2D" to="UI/Estruturas/Upgrade1/Area2D" method="_on_input_event"]
