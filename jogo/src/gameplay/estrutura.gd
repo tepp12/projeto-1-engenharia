@@ -3,10 +3,24 @@ class_name Estrutura
 extends Node
 
 var nome : String
+var e_icon : Texture2D
 var custo_inicial : int
 var custo : int
 var renda : int
 var quantidade : int
+
+#Construtor
+func _init(c_nome := " ", c_icon := "res://icon.svg", c_custo := 0, c_renda := 0, c_quantidade := 0) -> void:
+	#Carrega um icone para representar a Estrutura
+	e_icon = load(c_icon)
+	
+	#Construtor Recebe o Custo Inicial apenas
+	custo_inicial = c_custo
+	custo = custo_inicial
+	
+	nome = c_nome
+	renda = c_renda
+	quantidade = c_quantidade
 
 
 # Called when the node enters the scene tree for the first time.
