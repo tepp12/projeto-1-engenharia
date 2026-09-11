@@ -1,0 +1,65 @@
+[gd_scene format=3 uid="uid://tnn54sib7lhv"]
+
+[ext_resource type="Texture2D" uid="uid://d0h082ghpxwpw" path="res://icon.svg" id="1_e08iy"]
+[ext_resource type="Script" uid="uid://bd1fbyjkevsjj" path="res://src/gameplay/estrutura.gd" id="1_x506j"]
+
+[sub_resource type="LabelSettings" id="LabelSettings_r4ag2"]
+font_size = 25
+
+[sub_resource type="LabelSettings" id="LabelSettings_5uy4k"]
+font_size = 25
+
+[sub_resource type="LabelSettings" id="LabelSettings_v276y"]
+font_size = 21
+
+[sub_resource type="LabelSettings" id="LabelSettings_w03sw"]
+font_size = 36
+
+[node name="Estrutura" type="Button" unique_id=2044236045]
+offset_left = 2.0
+offset_top = 77.0
+offset_right = 637.0
+offset_bottom = 168.0
+icon = ExtResource("1_e08iy")
+script = ExtResource("1_x506j")
+
+[node name="Nome" type="Label" parent="." unique_id=610009171]
+layout_mode = 0
+offset_left = 136.0
+offset_top = 6.0
+offset_right = 411.0
+offset_bottom = 42.0
+text = "Nome"
+label_settings = SubResource("LabelSettings_r4ag2")
+
+[node name="Custo" type="Label" parent="." unique_id=1357741150]
+layout_mode = 1
+anchors_preset = -1
+anchor_right = 0.031000001
+anchor_bottom = 0.085
+offset_left = 136.0
+offset_top = 45.0
+offset_right = 305.315
+offset_bottom = 68.44
+text = "Custo: X Rações"
+label_settings = SubResource("LabelSettings_5uy4k")
+
+[node name="Renda" type="Label" parent="." unique_id=1645750688]
+layout_mode = 0
+offset_left = 136.0
+offset_top = 94.0
+offset_right = 293.0
+offset_bottom = 128.0
+text = "X Rações por Segundo"
+label_settings = SubResource("LabelSettings_v276y")
+
+[node name="Quantidade" type="Label" parent="." unique_id=442169104]
+layout_mode = 0
+offset_left = 574.0
+offset_top = 9.0
+offset_right = 634.0
+offset_bottom = 135.0
+text = "x 0"
+label_settings = SubResource("LabelSettings_w03sw")
+horizontal_alignment = 1
+vertical_alignment = 1
