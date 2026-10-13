@@ -246,13 +246,47 @@ offset_bottom = 361.0
 
 [node name="Estrutura" parent="UI/Estruturas" unique_id=2044236045 instance=ExtResource("4_ndcgj")]
 layout_mode = 0
-offset_left = -392.0
-offset_top = 97.0
-offset_right = 243.0
-offset_bottom = 233.0
-nome = "Mouse"
+offset_left = -10.000008
+offset_top = -1.1920929e-07
+offset_right = 625.0
+offset_bottom = 136.0
+scale = Vector2(0.4, 0.4)
+nome = "Brinquedo"
 custo_inicial = 10
 renda = 1
+
+[node name="Estrutura3" parent="UI/Estruturas" unique_id=331768586 instance=ExtResource("4_ndcgj")]
+layout_mode = 0
+offset_left = -9.0
+offset_top = 107.0
+offset_right = 626.0
+offset_bottom = 243.00003
+scale = Vector2(0.4, 0.4)
+nome = "Erva-de-Gato"
+custo_inicial = 300
+renda = 75
+
+[node name="Estrutura2" parent="UI/Estruturas" unique_id=2142718069 instance=ExtResource("4_ndcgj")]
+layout_mode = 0
+offset_left = -10.000008
+offset_top = 53.999996
+offset_right = 625.0
+offset_bottom = 190.0
+scale = Vector2(0.4, 0.4)
+nome = "Laser"
+custo_inicial = 100
+renda = 10
+
+[node name="Estrutura4" parent="UI/Estruturas" unique_id=1926513560 instance=ExtResource("4_ndcgj")]
+layout_mode = 0
+offset_left = -10.0000305
+offset_top = 162.0
+offset_right = 625.0
+offset_bottom = 298.00003
+scale = Vector2(0.4, 0.4)
+nome = "Caixa de Areia"
+custo_inicial = 500
+renda = 100
 
 [node name="ColorRect3" type="ColorRect" parent="UI" unique_id=1462875185]
 layout_mode = 0

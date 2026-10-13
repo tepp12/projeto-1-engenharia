@@ -7,6 +7,8 @@ extends Button
 var custo : int
 @export var renda : int
 @export var quantidade : int
+var mod_soma : int
+var mod_prod : int
 
 
 #Construtor
@@ -20,6 +22,10 @@ func _init(c_nome := " ", c_icon := "res://icon.svg", c_custo := 0, c_renda := 0
 	nome = c_nome
 	renda = c_renda
 	quantidade = c_quantidade
+	
+	mod_prod = 1
+	mod_soma = 0
+	
 	_atualizar_custo()
 
 
@@ -27,6 +33,7 @@ func _init(c_nome := " ", c_icon := "res://icon.svg", c_custo := 0, c_renda := 0
 func _ready() -> void:
 	get_node("Nome").text = nome
 	custo = custo_inicial
+	scale = Vector2(0.45, 0.45)
 
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
@@ -52,7 +59,7 @@ func _comprar(buy_amount :int) -> void:
 
 #Gera renda para o jogador
 func _gerar_renda() -> void:
-	GlobalValues.dinheiro += renda*quantidade
+	GlobalValues.dinheiro += ((renda + mod_soma) * mod_prod)*quantidade
 
 func _pressed() -> void:
 	_comprar(1)
