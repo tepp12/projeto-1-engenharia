@@ -14,7 +14,7 @@ config/name="parque kikky"
 config/version="0.0.1"
 run/main_scene="uid://yr1ewngoew6k"
 config/features=PackedStringArray("4.7", "GL Compatibility")
-config/icon="res://icon.svg"
+config/icon="uid://bmj4d4w5rurf2"
 
 [autoload]
 

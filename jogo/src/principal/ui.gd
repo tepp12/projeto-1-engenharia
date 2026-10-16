@@ -8,7 +8,6 @@ extends Control
 func _ready() -> void:
 	timer.timeout.connect(_on_timeout)
 
-
 # Called every frame. 'delta' is the elapsed time since the previous frame.
 func _process(_delta: float) -> void:
 	dinheiro.text = str(int(GlobalValues.dinheiro)) + " rações"

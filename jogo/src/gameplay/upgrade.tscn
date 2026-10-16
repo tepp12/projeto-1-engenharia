@@ -1,0 +1,14 @@
+[gd_scene format=3 uid="uid://mrwlgni43fpc"]
+
+[ext_resource type="Script" uid="uid://bcchtvt5hv0vw" path="res://src/gameplay/upgrade.gd" id="2_3g07s"]
+
+[node name="Upgrade" type="Button" unique_id=1499868966]
+offset_left = 288.0
+offset_top = 120.0
+offset_right = 328.0
+offset_bottom = 160.0
+script = ExtResource("2_3g07s")
+nome = null
+custo = null
+
+[connection signal="pressed" from="." to="." method="_on_pressed"]

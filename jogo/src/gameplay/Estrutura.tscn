@@ -2,33 +2,57 @@
 
 [ext_resource type="Texture2D" uid="uid://d0h082ghpxwpw" path="res://icon.svg" id="1_e08iy"]
 [ext_resource type="Script" uid="uid://bd1fbyjkevsjj" path="res://src/gameplay/estrutura.gd" id="1_x506j"]
+[ext_resource type="FontFile" uid="uid://cb4v6nqeebbyq" path="res://recursos/font/Kavoon-Regular.ttf" id="3_6y34s"]
+[ext_resource type="Texture2D" uid="uid://marmgvpfgd1r" path="res://recursos/sprites/kibble.png" id="4_0brp5"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_0brp5"]
+bg_color = Color(0.27875546, 0.653988, 0.7835533, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_2mfnr"]
+bg_color = Color(0.15125111, 0.4264077, 0.518606, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_8tnvw"]
+bg_color = Color(0.21284541, 0.5516221, 0.66608757, 1)
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_450cq"]
+bg_color = Color(0.34901962, 0.65882355, 0.6862745, 1)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_w3pfa"]
 
 [sub_resource type="LabelSettings" id="LabelSettings_r4ag2"]
-font_size = 25
+font = ExtResource("3_6y34s")
+font_size = 32
+shadow_size = 2
+shadow_color = Color(0, 0, 0, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_5uy4k"]
-font_size = 25
-
-[sub_resource type="LabelSettings" id="LabelSettings_v276y"]
-font_size = 21
+font = ExtResource("3_6y34s")
+shadow_color = Color(0, 0, 0, 1)
 
 [sub_resource type="LabelSettings" id="LabelSettings_w03sw"]
-font_size = 36
+font = ExtResource("3_6y34s")
+font_size = 24
+shadow_color = Color(0, 0, 0, 1)
 
 [node name="Estrutura" type="Button" unique_id=2044236045]
-offset_left = 2.0
-offset_top = 77.0
-offset_right = 637.0
-offset_bottom = 168.0
+offset_left = 144.0
+offset_top = 200.0
+offset_right = 504.0
+offset_bottom = 264.0
+theme_override_styles/normal = SubResource("StyleBoxFlat_0brp5")
+theme_override_styles/pressed = SubResource("StyleBoxFlat_2mfnr")
+theme_override_styles/hover = SubResource("StyleBoxFlat_8tnvw")
+theme_override_styles/disabled = SubResource("StyleBoxFlat_450cq")
+theme_override_styles/focus = SubResource("StyleBoxEmpty_w3pfa")
 icon = ExtResource("1_e08iy")
+expand_icon = true
 script = ExtResource("1_x506j")
 
 [node name="Nome" type="Label" parent="." unique_id=610009171]
 layout_mode = 0
-offset_left = 136.0
-offset_top = 6.0
-offset_right = 411.0
-offset_bottom = 42.0
+offset_left = 80.0
+offset_right = 169.0
+offset_bottom = 41.0
 text = "Nome"
 label_settings = SubResource("LabelSettings_r4ag2")
 
@@ -37,29 +61,26 @@ layout_mode = 1
 anchors_preset = -1
 anchor_right = 0.031000001
 anchor_bottom = 0.085
-offset_left = 136.0
-offset_top = 45.0
-offset_right = 305.315
-offset_bottom = 68.44
-text = "Custo: X Rações"
+offset_left = 104.18808
+offset_top = 40.231262
+offset_right = 181.36008
+offset_bottom = 55.791264
+text = "num ração"
 label_settings = SubResource("LabelSettings_5uy4k")
-
-[node name="Renda" type="Label" parent="." unique_id=1645750688]
-layout_mode = 0
-offset_left = 136.0
-offset_top = 94.0
-offset_right = 293.0
-offset_bottom = 128.0
-text = "X Rações por Segundo"
-label_settings = SubResource("LabelSettings_v276y")
+vertical_alignment = 1
 
 [node name="Quantidade" type="Label" parent="." unique_id=442169104]
 layout_mode = 0
-offset_left = 574.0
-offset_top = 9.0
-offset_right = 634.0
-offset_bottom = 135.0
+offset_left = 296.0
+offset_top = 8.0
+offset_right = 356.0
+offset_bottom = 60.0
 text = "x 0"
 label_settings = SubResource("LabelSettings_w03sw")
 horizontal_alignment = 1
 vertical_alignment = 1
+
+[node name="Sprite2D" type="Sprite2D" parent="." unique_id=1322074483]
+position = Vector2(88.18808, 49.231255)
+scale = Vector2(0.064752266, 0.06892508)
+texture = ExtResource("4_0brp5")

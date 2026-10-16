@@ -3,6 +3,8 @@ extends AnimatedSprite2D
 var escala_original := scale
 var escala_desejada : Vector2
 
+var upgrades : Array[Upgrade] = []
+
 @onready var click_area := $ClickArea
 
 # Called when the node enters the scene tree for the first time.
